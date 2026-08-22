@@ -15,7 +15,7 @@ const MARKDOWN = /\.(?:md|markdown)$/;
 
 export async function build(contentDir, outDir, options) {
   const tree = await readTree(path.resolve(contentDir));
-  const site = { ...options, name: options.name ?? title(tree) ?? "docs" };
+  const site = { ...options, name: options.name ?? title(tree) ?? "docs", tree };
   const theme = await readFile(new URL("../theme.css", import.meta.url), "utf8");
 
   // Pages reference ./theme.css, so every emitted directory carries a copy.
@@ -147,7 +147,26 @@ async function emitPage(page, trail, site, outDir) {
   if (source) await writeFile(path.join(outDir, ...segments, "index.md"), source);
 }
 
-// --- whole-site extras ---------------------------------------------------------
+// The persistent index list: the whole tree as nested links, with the page
+// you are on marked. Pure markup — the highlight is baked in at build time.
+function treeNav(tree, current) {
+  const currentPath = url(current);
+  const render = (node, segments) => {
+    const here = [...segments, node.slug];
+    const path = url(here);
+    const active = path === currentPath ? ' class="current"' : "";
+    const label = escapeHtml(title(node));
+    if (node.file) return `<li><a href="${path}"${active}>${label}</a></li>`;
+    const kids = node.children.map((child) => render(child, here)).join("");
+    return (
+      `<li class="group"><a href="${path}"${active}>${label}</a>` +
+      (kids ? `<ul>${kids}</ul>` : "") +
+      `</li>`
+    );
+  };
+  const items = tree.children.map((child) => render(child, [])).join("");
+  return `<nav class="tree" aria-label="Pages"><ul>${items}</ul></nav>`;
+}
 
 function* walkPaths(node, base) {
   const here = node.slug ? [...base, node.slug] : base;
@@ -227,6 +246,8 @@ function pageShell({ site, segments, title: pageTitle, description, trail, body 
   const canonical = site.siteUrl
     ? `<link rel="canonical" href="${escapeHtml(site.siteUrl + url(segments))}">`
     : "";
+  // The landing page stands alone; every other page carries the index list.
+  const nav = segments.length ? treeNav(site.tree, segments) : "";
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -238,11 +259,14 @@ ${canonical}
 <link rel="stylesheet" href="${"./".repeat(segments.length)}theme.css">
 </head>
 <body>
+<div class="wrap${nav ? "" : " solo"}">
+${nav}
 <main>
 ${breadcrumbs(trail, site)}
 ${body}
 ${footer(site)}
 </main>
+</div>
 </body>
 </html>
 `;

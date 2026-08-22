@@ -14,7 +14,27 @@
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--fg);
        font: 16px/1.65 var(--font-body); }
-main { max-width: 46rem; margin: 0 auto; padding: 2.5rem 1.25rem 3rem; }
+.wrap { max-width: 68rem; margin: 0 auto; padding: 2.5rem 1.25rem 3rem;
+        display: grid; grid-template-columns: 14rem minmax(0, 1fr); gap: 2.75rem;
+        align-items: start; }
+.wrap.solo { grid-template-columns: minmax(0, 1fr); max-width: 46rem; }
+main { max-width: 46rem; }
+@media (max-width: 56rem) {
+  .wrap, .wrap.solo { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+  nav.tree ul ul { display: none; }
+}
+
+/* The index list on the left: the whole tree, all the time. */
+nav.tree { position: sticky; top: 2rem; font-family: var(--font-mono);
+           font-size: .8rem; line-height: 1.45; }
+nav.tree ul { list-style: none; margin: 0; padding: 0; }
+nav.tree ul ul { padding-left: .8rem; border-left: 1px solid var(--line);
+                 margin: .15rem 0 .35rem; }
+nav.tree a { color: var(--dim); text-decoration: none; display: block;
+             padding: .16rem 0; }
+nav.tree a:hover { color: var(--fg); }
+nav.tree a.current { color: var(--accent); }
+nav.tree li.group > a { color: var(--fg); font-weight: 600; }
 
 .crumbs { font-family: var(--font-mono); font-size: .8rem; margin-bottom: 2rem; }
 .crumbs a { color: var(--dim); }
