@@ -2,14 +2,24 @@ import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 import type { PowderworksSiteConfig } from "./config";
 import { localizePath, repositoryUrl } from "./config";
 
+function identity(url: string): string {
+  return url;
+}
+
 export function createPowderworksBaseOptions(
   site: PowderworksSiteConfig,
   locale: string,
 ): BaseLayoutProps {
+  // A single-locale site has no locale routing: URLs stay unprefixed and
+  // the language switcher has nothing to switch.
+  const localized =
+    site.locales.length > 1 ? (url: string) => localizePath(locale, url) : identity;
+  const multiLocale = site.locales.length > 1;
+
   const links: NonNullable<BaseLayoutProps["links"]> = [
     ...(site.links ?? []).map((link) => ({
       text: link.text,
-      url: link.external ? link.url : localizePath(locale, link.url),
+      url: link.external ? link.url : localized(link.url),
       active: link.external ? "none" as const : "nested-url" as const,
       external: link.external,
     })),
@@ -23,7 +33,7 @@ export function createPowderworksBaseOptions(
   ];
 
   return {
-    i18n: site.locales.length > 1,
+    i18n: multiLocale,
     nav: {
       title: (
         <span className="pw-nav-title">
@@ -35,7 +45,7 @@ export function createPowderworksBaseOptions(
           <span>{site.name}</span>
         </span>
       ),
-      url: `/${locale}`,
+      url: multiLocale ? `/${locale}` : "/",
     },
     links,
     githubUrl: repositoryUrl(site.repository),
