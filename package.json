@@ -4,8 +4,7 @@
   "private": true,
   "type": "module",
   "files": [
-    "dist",
-    "src/theme.css"
+    "dist"
   ],
   "exports": {
     ".": "./dist/index.js",
@@ -14,8 +13,7 @@
     "./layout": "./dist/layout.js",
     "./mdx": "./dist/mdx.js",
     "./provider": "./dist/provider.js",
-    "./search": "./dist/search.js",
-    "./theme.css": "./src/theme.css"
+    "./search": "./dist/search.js"
   },
   "types": "./dist/index.d.ts",
   "scripts": {
