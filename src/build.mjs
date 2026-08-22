@@ -149,7 +149,7 @@ async function emitPage(page, trail, site, outDir) {
 
 // The persistent index list: the whole tree as nested links, with the page
 // you are on marked. Pure markup — the highlight is baked in at build time.
-function treeNav(tree, current, siteName) {
+function treeNav(tree, current) {
   const currentPath = url(current);
   const render = (node, segments) => {
     const here = [...segments, node.slug];
@@ -164,9 +164,7 @@ function treeNav(tree, current, siteName) {
       `</li>`
     );
   };
-  const items =
-    `<li><a href="/"${currentPath === "/" ? ' class="current"' : ""}>${escapeHtml(siteName)}</a></li>` +
-    tree.children.map((child) => render(child, [])).join("");
+  const items = tree.children.map((child) => render(child, [])).join("");
   return `<nav class="tree" aria-label="Pages"><ul>${items}</ul></nav>`;
 }
 
@@ -277,7 +275,7 @@ function pageShell({ site, segments, title: pageTitle, description, trail, body 
   const canonical = site.siteUrl
     ? `<link rel="canonical" href="${escapeHtml(site.siteUrl + url(segments))}">`
     : "";
-  const nav = treeNav(site.tree, segments, site.name);
+  const nav = treeNav(site.tree, segments);
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -285,12 +283,16 @@ function pageShell({ site, segments, title: pageTitle, description, trail, body 
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${escapeHtml(pageTitle)}${segments.length ? ` — ${escapeHtml(site.name)}` : ""}</title>
 ${description ? `<meta name="description" content="${escapeHtml(description)}">` : ""}
+${site.logo ? `<link rel="icon" href="${escapeHtml(site.logo)}">` : ""}
 ${canonical}
 <link rel="stylesheet" href="${"./".repeat(segments.length)}theme.css">
 </head>
 <body>
 <div class="wrap">
+${nav ? `<div>
+<p class="brand"><a href="/">${site.logo ? `<img class="tree-logo" src="${escapeHtml(site.logo)}" alt="">` : ""}<strong>${escapeHtml(site.name)}</strong></a></p>
 ${nav}
+</div>` : ""}
 <main>
 ${breadcrumbs(trail, site)}
 ${body}
@@ -303,7 +305,8 @@ ${footer(site)}
 `;
 }
 
-async function writePage({ outDir, ...context }) {
+async function writePage({ outDir, title: pageTitle, ...context }) {
+  context.body = `<h1>${escapeHtml(pageTitle)}</h1>\n` + context.body;
   const target = path.join(outDir, ...context.segments, "index.html");
   await mkdir(path.dirname(target), { recursive: true });
   await writeFile(target, pageShell(context));

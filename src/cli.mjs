@@ -19,6 +19,7 @@ Options:
   --name <name>        Site name (default: first heading or "docs")
   --description <text> Meta description for the root page
   --github <owner/repo|url>  Footer repository link
+  --logo <path>        Small mark beside the site name and as favicon
   --static <dir>       Directory copied verbatim into the output
   --license <text>     Footer license line
   -h, --help`);
@@ -52,6 +53,7 @@ try {
     github: option("github"),
     staticDir: option("static"),
     license: option("license"),
+    logo: option("logo"),
   });
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);
