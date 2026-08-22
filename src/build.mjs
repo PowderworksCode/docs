@@ -56,8 +56,12 @@ async function readTree(dir) {
 
     if (entry.isDirectory()) {
       const child = await readTree(file);
-      if (child.root || child.children.length)
+      if (child.root || child.children.length) {
+        // A section's order lives on its index page's frontmatter.
+        if (child.root?.frontmatter?.order !== undefined)
+          child.order = Number(child.root.frontmatter.order);
         node.children.push({ ...child, slug: entry.name });
+      }
     } else if (MARKDOWN.test(entry.name)) {
       const { frontmatter, body } = splitFrontmatter(await readFile(file, "utf8"));
       const page = { file, slug: entry.name.replace(MARKDOWN, ""), frontmatter, body };
