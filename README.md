@@ -1,36 +1,46 @@
-# Powderworks docs
+# powderworks-docs
 
-`@thepowderworks/fumadocs` — the shared Fumadocs foundation for Powderworks
-project sites: configuration helpers, locale-aware layout options, providers,
-search plumbing, MDX components, and persistent programming-language tabs.
+Turns a tree of markdown into a tree of indexes. No client script, ever.
 
-It is installed directly from this repository; the first consumer is
-[straitjacket.dev](https://straitjacket.dev), with ordnung's site to follow.
-Visual identity stays with each project — this package ships no styles.
+Every directory is a section; every section gets an index page listing its
+children — title and one-line description from frontmatter. Breadcrumbs come
+from the path you already have. The whole aesthetic is [cratebank.io](https://cratebank.io):
+system serif, six color tokens, automatic light and dark, one readable column.
 
-## Development
+## Usage
 
 ```sh
-bun install
-bun run build
-bun run typecheck
+powderworks-docs build <contentDir> --out <outDir> \
+  --site-url https://straitjacket.dev \
+  --name Straitjacket \
+  --description "A secret scanner, but for slop." \
+  --github PowderworksCode/straitjacket \
+  --license MIT \
+  --static ./public
 ```
 
-## Consumer setup
+## Content shape
 
-The package exports focused entrypoints so a Next.js site can keep server and
-client boundaries obvious:
-
-- `config` — typed site metadata and locale-aware URL helpers
-- `i18n` — Fumadocs locale configuration with static-export-safe prefixes
-- `layout` — fleet navigation and base layout options
-- `provider` and `search` — client-side Fumadocs plumbing
-- `mdx` — standard components and persistent `LanguageTabs`
-
-A consumer imports its own styling alongside the Fumadocs preset:
-
-```css
-@import "tailwindcss";
-@import "fumadocs-ui/css/neutral.css";
-@import "fumadocs-ui/css/preset.css";
+```text
+content/
+  index.md               → /                (landing)
+  getting-started.md     → /getting-started/
+  guides/
+    index.md             → /guides/         (section index)
+    ci.md                → /guides/ci/
 ```
+
+Frontmatter keys: `title`, `description`, `order` (lower sorts first within
+its section).
+
+Each page also emits its markdown source as `index.md` beside its rendered
+HTML, so agents can fetch either form without content negotiation.
+
+Emitted alongside the pages: `sitemap.xml`, `llms.txt`, `404.html`, and
+`theme.css` wherever a page references it.
+
+## Serving
+
+The output is plain files; anything that serves static assets works. On
+Cloudflare Workers, point `[assets]` at the output directory and set
+`not_found_handling = "404-page"`.
