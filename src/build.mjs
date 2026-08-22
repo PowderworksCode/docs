@@ -296,7 +296,7 @@ ${nav}
 <main>
 ${breadcrumbs(trail, site)}
 ${body}
-${pager(site.tree, segments)}
+${segments.length ? pager(site.tree, segments) : ""}
 ${footer(site)}
 </main>
 </div>
