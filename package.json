@@ -1,0 +1,25 @@
+{
+  "name": "powderworks-docs-workspace",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "bun run --filter '@thepowderworks/fumadocs' build",
+    "typecheck": "bun run --filter '@thepowderworks/fumadocs' typecheck"
+  },
+  "devDependencies": {
+    "@orama/orama": "^3.1.18",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@types/node": "^26.0.0",
+    "fumadocs-core": "16.11.1",
+    "fumadocs-ui": "16.11.1",
+    "next": "16.2.10",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "typescript": "^6.0.3"
+  }
+}
