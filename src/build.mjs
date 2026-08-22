@@ -103,7 +103,7 @@ async function emitSection(section, trail, site, outDir) {
   const segments = here.map((n) => n.slug);
 
   const body = section.root ? marked.parse(section.root.body) : "";
-  const listing = section.children.length
+  const listing = section.slug && section.children.length
     ? `<ul class="index">\n${section.children.map((child) =>
         `<li><a href="${child.slug}/">${escapeHtml(title(child))}</a>` +
         (description(child)
