@@ -149,7 +149,7 @@ async function emitPage(page, trail, site, outDir) {
 
 // The persistent index list: the whole tree as nested links, with the page
 // you are on marked. Pure markup — the highlight is baked in at build time.
-function treeNav(tree, current) {
+function treeNav(tree, current, siteName) {
   const currentPath = url(current);
   const render = (node, segments) => {
     const here = [...segments, node.slug];
@@ -164,7 +164,9 @@ function treeNav(tree, current) {
       `</li>`
     );
   };
-  const items = tree.children.map((child) => render(child, [])).join("");
+  const items =
+    `<li><a href="/"${currentPath === "/" ? ' class="current"' : ""}>${escapeHtml(siteName)}</a></li>` +
+    tree.children.map((child) => render(child, [])).join("");
   return `<nav class="tree" aria-label="Pages"><ul>${items}</ul></nav>`;
 }
 
@@ -242,12 +244,40 @@ function footer(site) {
   return `<footer>${bits.join(" · ")}</footer>`;
 }
 
+// Pages in sidebar order, for the previous/next links at the foot of each
+// page. Sections count only when they carry their own index page.
+function flatPages(tree) {
+  if (!tree.flat) {
+    tree.flat = [...walkPaths(tree, [])]
+      .filter(({ node }) => node.file || node.root)
+      .map(({ segments, node }) => ({ path: url(segments), title: title(node) }));
+  }
+  return tree.flat;
+}
+
+function pager(tree, segments) {
+  const pages = flatPages(tree);
+  const index = pages.findIndex((page) => page.path === url(segments));
+  const previous = index > 0 ? pages[index - 1] : undefined;
+  const next = index !== -1 && index < pages.length - 1 ? pages[index + 1] : undefined;
+  if (!previous && !next) return "";
+  const side = (page, arrow, align) =>
+    page
+      ? `<a href="${page.path}" class="${align}">${arrow} ${escapeHtml(page.title)}</a>`
+      : "<span></span>";
+  return (
+    `<nav class="pager">` +
+    side(previous, "\u2190", "prev") +
+    side(next, "\u2192", "next") +
+    `</nav>`
+  );
+}
+
 function pageShell({ site, segments, title: pageTitle, description, trail, body }) {
   const canonical = site.siteUrl
     ? `<link rel="canonical" href="${escapeHtml(site.siteUrl + url(segments))}">`
     : "";
-  // The landing page stands alone; every other page carries the index list.
-  const nav = segments.length ? treeNav(site.tree, segments) : "";
+  const nav = treeNav(site.tree, segments, site.name);
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -259,11 +289,12 @@ ${canonical}
 <link rel="stylesheet" href="${"./".repeat(segments.length)}theme.css">
 </head>
 <body>
-<div class="wrap${nav ? "" : " solo"}">
+<div class="wrap">
 ${nav}
 <main>
 ${breadcrumbs(trail, site)}
 ${body}
+${pager(site.tree, segments)}
 ${footer(site)}
 </main>
 </div>

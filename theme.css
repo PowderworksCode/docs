@@ -24,20 +24,25 @@ main { max-width: 46rem; }
   nav.tree ul ul { display: none; }
 }
 
-/* The index list on the left: the whole tree, all the time. */
-nav.tree { position: sticky; top: 2rem; font-family: var(--font-mono);
-           font-size: .8rem; line-height: 1.45; }
+/* The index list on the left: the whole tree, all the time, in the body
+   voice. Groups are bold; where you are is underlined. */
+nav.tree { position: sticky; top: 2rem; font-size: .95rem; }
 nav.tree ul { list-style: none; margin: 0; padding: 0; }
-nav.tree ul ul { padding-left: .8rem; border-left: 1px solid var(--line);
-                 margin: .15rem 0 .35rem; }
-nav.tree a { color: var(--dim); text-decoration: none; display: block;
-             padding: .16rem 0; }
-nav.tree a:hover { color: var(--fg); }
-nav.tree a.current { color: var(--accent); }
-nav.tree li.group > a { color: var(--fg); font-weight: 600; }
+nav.tree ul ul { padding-left: 1rem; }
+nav.tree a { color: var(--fg); text-decoration: none; display: block;
+             padding: .18rem 0; }
+nav.tree a:hover { text-decoration: underline; text-underline-offset: 3px; }
+nav.tree a.current { font-weight: 700; text-decoration: underline;
+                     text-underline-offset: 3px; }
+nav.tree li.group > a { font-weight: 700; }
 
-.crumbs { font-family: var(--font-mono); font-size: .8rem; margin-bottom: 2rem; }
-.crumbs a { color: var(--dim); }
+.crumbs { font-size: .9rem; margin-bottom: 2rem; }
+
+/* Previous and next, in sidebar order. */
+.pager { display: flex; justify-content: space-between; gap: 1.5rem;
+         margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line);
+         font-size: .95rem; }
+.pager .next { margin-left: auto; text-align: right; }
 
 h1 { font-size: 2rem; letter-spacing: -.02em; margin: 0 0 .5rem; }
 h2 { font-size: 1.15rem; letter-spacing: -.01em; margin: 2.25rem 0 .6rem; }
