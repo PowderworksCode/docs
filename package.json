@@ -1,20 +1,42 @@
 {
-  "name": "powderworks-docs-workspace",
-  "private": true,
+  "name": "@thepowderworks/fumadocs",
   "version": "0.0.0",
+  "private": true,
   "type": "module",
-  "workspaces": [
-    "packages/*"
+  "files": [
+    "dist",
+    "src/theme.css"
   ],
+  "exports": {
+    ".": "./dist/index.js",
+    "./config": "./dist/config.js",
+    "./i18n": "./dist/i18n.js",
+    "./layout": "./dist/layout.js",
+    "./mdx": "./dist/mdx.js",
+    "./provider": "./dist/provider.js",
+    "./search": "./dist/search.js",
+    "./theme.css": "./src/theme.css"
+  },
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "bun run --filter '@thepowderworks/fumadocs' build",
-    "typecheck": "bun run --filter '@thepowderworks/fumadocs' typecheck"
+    "prepare": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "@orama/orama": "^3.1.18",
+    "fumadocs-core": "16.11.1",
+    "fumadocs-ui": "16.11.1",
+    "next": ">=16.2.0 <17",
+    "react": ">=19.2.0 <20",
+    "react-dom": ">=19.2.0 <20"
   },
   "devDependencies": {
     "@orama/orama": "^3.1.18",
+    "@types/mdx": "^2.0.14",
+    "@types/node": "^26.0.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "@types/node": "^26.0.0",
     "fumadocs-core": "16.11.1",
     "fumadocs-ui": "16.11.1",
     "next": "16.2.10",
