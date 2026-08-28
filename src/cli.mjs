@@ -20,6 +20,8 @@ Options:
   --description <text> Meta description for the root page
   --github <owner/repo|url>  Footer repository link
   --logo <path>        Small mark beside the site name and as favicon
+  --by <name>          Who makes it, credited under the site name
+  --by-url <url>       Where that credit links
   --static <dir>       Directory copied verbatim into the output
   --license <text>     Footer license line
   -h, --help`);
@@ -54,6 +56,8 @@ try {
     staticDir: option("static"),
     license: option("license"),
     logo: option("logo"),
+    by: option("by"),
+    byUrl: option("by-url"),
   });
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);
