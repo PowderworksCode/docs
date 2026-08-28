@@ -13,6 +13,45 @@ import { marked } from "marked";
 
 const MARKDOWN = /\.(?:md|markdown)$/;
 
+// Every heading below the page title links to itself, so a section can be sent
+// to someone directly. The mark is invisible until the heading is hovered or
+// the link takes focus, and it holds its space either way, so nothing shifts.
+marked.use({
+  renderer: {
+    heading(token) {
+      const text = this.parser.parseInline(token.tokens);
+      const id = headingId(text);
+      return `<h${token.depth} id="${id}">${text}` +
+        `<a class="anchor" href="#${id}" aria-label="Link to this section">#</a>` +
+        `</h${token.depth}>\n`;
+    },
+  },
+});
+
+const headingIds = new Set();
+const ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'" };
+
+function headingId(html) {
+  const base = html
+    .replace(/<[^>]*>/g, "")
+    .replace(/&(amp|lt|gt|quot|#39);/g, (_, name) => ENTITIES[name])
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-") || "section";
+  let id = base;
+  for (let n = 2; headingIds.has(id); n++) id = `${base}-${n}`;
+  headingIds.add(id);
+  return id;
+}
+
+// Ids need to be unique within a page, not across the site, so the set of
+// those taken resets with each page rendered.
+function renderMarkdown(text) {
+  headingIds.clear();
+  return marked.parse(text);
+}
+
 export async function build(contentDir, outDir, options) {
   const tree = await readTree(path.resolve(contentDir));
   const site = { ...options, name: options.name ?? title(tree) ?? "docs", tree };
@@ -106,7 +145,7 @@ async function emitSection(section, trail, site, outDir) {
   const here = section.slug ? [...trail, section] : trail;
   const segments = here.map((n) => n.slug);
 
-  const body = section.root ? marked.parse(section.root.body) : "";
+  const body = section.root ? renderMarkdown(section.root.body) : "";
   const listing = section.slug && section.children.length
     ? `<ul class="index">\n${section.children.map((child) =>
         `<li><a href="${child.slug}/">${escapeHtml(title(child))}</a>` +
@@ -143,7 +182,7 @@ async function emitPage(page, trail, site, outDir) {
     segments,
     title: page.frontmatter.title ?? sentence(page.slug),
     description: page.frontmatter.description ?? "",
-    body: marked.parse(page.body),
+    body: renderMarkdown(page.body),
     trail,
     site,
   });
@@ -221,8 +260,11 @@ async function writeNotFound(site, outDir) {
 
 // --- page shell -----------------------------------------------------------------
 
-function breadcrumbs(trail, site) {
-  if (!trail.length) return "";
+// Every page but the landing opens with the same trail, so the top of one page
+// sits where the top of the last one did. Keying this off the trail instead
+// meant a section index had no crumbs while the pages inside it did.
+function breadcrumbs(trail, site, segments) {
+  if (!segments.length) return "";
   let href = "";
   const parts = [{ label: escapeHtml(site.name), href: "/" }];
   for (const node of trail) {
@@ -298,7 +340,7 @@ ${nav ? `<div>
 ${nav}
 </div>` : ""}
 <main>
-${breadcrumbs(trail, site)}
+${breadcrumbs(trail, site, segments)}
 ${body}
 ${segments.length ? pager(site.tree, segments) : ""}
 ${footer(site)}

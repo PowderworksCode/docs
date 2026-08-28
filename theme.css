@@ -36,7 +36,7 @@ nav.tree a.current { font-weight: 700; text-decoration: underline;
                      text-underline-offset: 3px; }
 nav.tree li.group > a { font-weight: 700; }
 
-.crumbs { font-size: .9rem; margin-bottom: 2rem; }
+.crumbs { font-size: .9rem; margin-bottom: .75rem; }
 
 /* Previous and next, in sidebar order. */
 .pager { display: flex; justify-content: space-between; gap: 1.5rem;
@@ -45,7 +45,15 @@ nav.tree li.group > a { font-weight: 700; }
 .pager .next { margin-left: auto; text-align: right; }
 
 h1 { font-size: 2rem; letter-spacing: -.02em; margin: 0 0 .5rem; }
-h2 { font-size: 1.15rem; letter-spacing: -.01em; margin: 2.25rem 0 .6rem; }
+h2 { font-size: 1.15rem; letter-spacing: -.01em; margin: 2.25rem 0 .6rem;
+     clear: both; }
+
+/* A heading links to itself. The mark keeps its space while invisible, so
+   hovering a heading does not nudge the line it sits on. */
+.anchor { margin-left: .35rem; font-weight: 400; text-decoration: none;
+          color: var(--dim); opacity: 0; }
+h2:hover .anchor, h3:hover .anchor, h4:hover .anchor,
+h5:hover .anchor, h6:hover .anchor, .anchor:focus { opacity: 1; }
 article > p:first-child { color: var(--dim); font-size: 1.05rem; }
 p, li { margin: .6rem 0; }
 
@@ -77,6 +85,13 @@ footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line);
 .brand a { color: var(--fg); text-decoration: none;
            display: inline-flex; align-items: center; gap: .45rem; }
 .tree-logo { width: 1.3rem; height: auto; display: inline-block; }
-.cover { text-align: center; margin: .5rem 0 1.25rem; }
-.cover img { max-width: 12rem; height: auto; border-radius: 6px;
+/* The cover engraving sits beside the opening paragraph, not above it, so the
+   page opens on words. It unfloats where a column that narrow would leave the
+   text in a gutter. */
+.cover { float: right; max-width: 45%; margin: .2rem 0 1rem 1.75rem; }
+.cover img { max-width: 12rem; width: 100%; height: auto; border-radius: 6px;
              border: 1px solid var(--line); }
+@media (max-width: 40rem) {
+  .cover { float: none; max-width: none; margin: .5rem 0 1.25rem;
+           text-align: center; }
+}
