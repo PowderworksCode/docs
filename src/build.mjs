@@ -280,6 +280,8 @@ async function writeNotFound(site, outDir) {
 
 // --- page shell -----------------------------------------------------------------
 
+// The first crumb says Home rather than the site's name: a reader who wants
+// the name has it above the index, and a trail reads as a path, not a title.
 // Every page opens at the same height. Pages below the landing show a trail;
 // the landing holds the same space open and shows nothing, so moving between
 // them does not shift the title. Keying this off the trail instead meant a
@@ -287,7 +289,7 @@ async function writeNotFound(site, outDir) {
 function breadcrumbs(trail, site, segments) {
   if (!segments.length) return `<div class="crumbs" aria-hidden="true"></div>`;
   let href = "";
-  const parts = [{ label: escapeHtml(site.name), href: "/" }];
+  const parts = [{ label: "Home", href: "/" }];
   for (const node of trail) {
     href += `/${node.slug}`;
     parts.push({ label: escapeHtml(title(node)), href: `${href}/` });

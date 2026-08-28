@@ -31,7 +31,7 @@ nav.tree { position: sticky; top: 2rem; font-size: .95rem; }
 nav.tree ul { list-style: none; margin: 0; padding: 0; }
 nav.tree ul ul { padding-left: 1rem; }
 nav.tree a { color: var(--fg); text-decoration: none; display: block;
-             position: relative; padding: .18rem 0 .18rem 1.4rem; }
+             position: relative; padding: .18rem 0 .18rem 1.45em; }
 nav.tree a:hover { text-decoration: underline; text-underline-offset: 3px; }
 nav.tree a.current { font-weight: 700; text-decoration: underline;
                      text-underline-offset: 3px; }
@@ -103,13 +103,15 @@ th { background: var(--code-bg); }
 footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line);
          color: var(--dim); font-size: .9rem; text-align: right; }
 
-.brand { margin: 0 0 1rem; }
+/* The name is the loudest thing in the column, because it is the one thing
+   there that is not navigation. */
+.brand { margin: 0 0 1.1rem; font-size: 1.5rem; line-height: 1.2; }
 .brand a { color: var(--fg); text-decoration: none; position: relative;
-           display: inline-block; padding-left: 1.4rem; }
+           display: inline-block; padding-left: 1.25em; }
 
 /* The mark sits in a gutter every link reserves, so the list does not shift
    as it moves from one entry to the next. */
-.tree-mark { position: absolute; left: 0; top: 50%; width: 1.05rem;
+.tree-mark { position: absolute; left: 0; top: 50%; width: 1.05em;
              height: auto; transform: translateY(-50%); }
 /* The cover engraving sits beside the opening paragraph, not above it, so the
    page opens on words. It unfloats where a column that narrow would leave the
