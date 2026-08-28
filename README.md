@@ -16,7 +16,6 @@ powderworks-docs build <contentDir> --out <outDir> \
   --description "A secret scanner, but for slop." \
   --github PowderworksCode/straitjacket \
   --license MIT \
-  --by Powderworks --by-url https://powderworks.dev \
   --static ./public
 ```
 

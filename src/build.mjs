@@ -296,17 +296,11 @@ function breadcrumbs(trail, site, segments) {
   );
 }
 
-// Who makes the thing, under its name in the index. A link when there is
-// somewhere to send a reader, plain text when there is not.
-function credit(site) {
-  if (!site.by) return "";
-  const name = escapeHtml(site.by);
-  return `<p class="by">by ${
-    site.byUrl ? `<a href="${escapeHtml(site.byUrl)}">${name}</a>` : name
-  }</p>`;
-}
-
+// A copyright line answers the whole question a footer is asked, so given one
+// it stands alone rather than joining the source link and the licence.
 function footer(site) {
+  if (site.copyright)
+    return `<footer>&copy; ${new Date().getFullYear()} ${escapeHtml(site.copyright)}</footer>`;
   const bits = [];
   if (site.github)
     bits.push(
@@ -406,7 +400,6 @@ ${canonical}
 <div class="wrap">
 ${nav ? `<div>
 <p class="brand"><a href="/">${segments.length ? "" : mark(site)}<strong>${escapeHtml(site.name)}</strong></a></p>
-${credit(site)}
 ${nav}
 </div>` : ""}
 <main>
