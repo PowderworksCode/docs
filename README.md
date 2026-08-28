@@ -31,7 +31,8 @@ content/
 ```
 
 Frontmatter keys: `title`, `description`, `order` (lower sorts first within
-its section).
+its section), and `tab-title` for a browser tab that should not read like the
+heading — given, it is the whole title, with no site name appended.
 
 Each page also emits its markdown source as `index.md` beside its rendered
 HTML, so agents can fetch either form without content negotiation.

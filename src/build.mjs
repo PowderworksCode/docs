@@ -135,6 +135,11 @@ const title = (node) =>
   node.root?.frontmatter.title ?? node.frontmatter?.title ?? sentence(node.slug);
 const description = (node) =>
   node.root?.frontmatter.description ?? node.frontmatter?.description ?? "";
+// A page whose tab should not read like its heading says so itself. Given, it
+// is the whole title: no site name appended, because the point of saying it is
+// to say the whole thing.
+const tab = (node) =>
+  node.root?.frontmatter["tab-title"] ?? node.frontmatter?.["tab-title"];
 
 const sentence = (slug) =>
   String(slug).replaceAll("-", " ").replace(/^\w/, (c) => c.toUpperCase());
@@ -160,6 +165,7 @@ async function emitSection(section, trail, site, outDir) {
     outDir,
     segments,
     title: title(section),
+    tab: tab(section),
     description: description(section),
     body: `${body}${listing}`,
     trail: here.slice(0, -1),
@@ -181,6 +187,7 @@ async function emitPage(page, trail, site, outDir) {
     outDir,
     segments,
     title: page.frontmatter.title ?? sentence(page.slug),
+    tab: tab(page),
     description: page.frontmatter.description ?? "",
     body: renderMarkdown(page.body),
     trail,
@@ -190,15 +197,25 @@ async function emitPage(page, trail, site, outDir) {
   if (source) await writeFile(path.join(outDir, ...segments, "index.md"), source);
 }
 
+// The site mark travels: it sits beside the entry you are reading rather than
+// staying put at the top, so the index says where you are twice over. Every
+// link reserves the gutter it lands in, so nothing shifts as it moves.
+function mark(site) {
+  return site.logo
+    ? `<img class="tree-mark" src="${escapeHtml(site.logo)}" alt="">`
+    : "";
+}
+
 // The persistent index list: the whole tree as nested links, with the page
 // you are on marked. Pure markup — the highlight is baked in at build time.
-function treeNav(tree, current) {
+function treeNav(tree, current, site) {
   const currentPath = url(current);
   const render = (node, segments) => {
     const here = [...segments, node.slug];
     const path = url(here);
-    const active = path === currentPath ? ' class="current"' : "";
-    const label = escapeHtml(title(node));
+    const reading = path === currentPath;
+    const active = reading ? ' class="current"' : "";
+    const label = (reading ? mark(site) : "") + escapeHtml(title(node));
     if (node.file) return `<li><a href="${path}"${active}>${label}</a></li>`;
     const kids = node.children.map((child) => render(child, here)).join("");
     return (
@@ -359,17 +376,17 @@ if (navigator.clipboard) {
 }
 </scr` + `ipt>`;
 
-function pageShell({ site, segments, title: pageTitle, description, trail, body }) {
+function pageShell({ site, segments, title: pageTitle, tab, description, trail, body }) {
   const canonical = site.siteUrl
     ? `<link rel="canonical" href="${escapeHtml(site.siteUrl + url(segments))}">`
     : "";
-  const nav = treeNav(site.tree, segments);
+  const nav = treeNav(site.tree, segments, site);
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escapeHtml(pageTitle)}${segments.length ? ` — ${escapeHtml(site.name)}` : ""}</title>
+<title>${escapeHtml(tab ?? pageTitle)}${!tab && segments.length ? ` — ${escapeHtml(site.name)}` : ""}</title>
 ${description ? `<meta name="description" content="${escapeHtml(description)}">` : ""}
 ${site.logo ? `<link rel="icon" href="${escapeHtml(site.logo)}">` : ""}
 ${canonical}
@@ -378,7 +395,7 @@ ${canonical}
 <body>
 <div class="wrap">
 ${nav ? `<div>
-<p class="brand"><a href="/">${site.logo ? `<img class="tree-logo" src="${escapeHtml(site.logo)}" alt="">` : ""}<strong>${escapeHtml(site.name)}</strong></a></p>
+<p class="brand"><a href="/">${segments.length ? "" : mark(site)}<strong>${escapeHtml(site.name)}</strong></a></p>
 ${nav}
 </div>` : ""}
 <main>
