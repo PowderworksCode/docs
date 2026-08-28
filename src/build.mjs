@@ -320,22 +320,36 @@ function pager(tree, segments) {
 
 // The one script this generator emits. It adds a copy button to each code
 // block, and it builds the buttons rather than shipping them in the markup, so
-// a reader without JavaScript is never offered a button that cannot work.
+// a reader without JavaScript is never offered a button that cannot work. The
+// mark is a clipboard rather than the word, and it stays visible rather than
+// waiting for a hover, because a button nobody can see is one nobody uses.
 const COPY_SCRIPT = `<script>
+const svg = (body, width) =>
+  '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="' +
+  width + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + body + '</svg>';
+const CLIPBOARD = svg('<rect x="6" y="6" width="8.5" height="9" rx="1.5"/>' +
+  '<path d="M10.5 6V3.5A1.5 1.5 0 0 0 9 2H3.5A1.5 1.5 0 0 0 2 3.5v7A1.5 1.5 0 0 0 3.5 12H6"/>', "1.4");
+const TICK = svg('<path d="M3.5 8.5 6.5 11.5 12.5 5"/>', "1.75");
+
 if (navigator.clipboard) {
   for (const pre of document.querySelectorAll("main pre")) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "copy";
-    button.textContent = "Copy";
+    const mark = (icon, label) => {
+      button.innerHTML = icon;
+      button.setAttribute("aria-label", label);
+      button.title = label;
+    };
+    mark(CLIPBOARD, "Copy");
     button.addEventListener("click", async () => {
       try {
         await navigator.clipboard.writeText((pre.querySelector("code") || pre).textContent);
-        button.textContent = "Copied";
+        mark(TICK, "Copied");
       } catch {
-        button.textContent = "Copy failed";
+        mark(CLIPBOARD, "Copy failed");
       }
-      setTimeout(() => { button.textContent = "Copy"; }, 1500);
+      setTimeout(() => mark(CLIPBOARD, "Copy"), 1500);
     });
     const holder = document.createElement("div");
     holder.className = "codeblock";
