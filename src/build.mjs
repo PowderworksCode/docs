@@ -380,6 +380,23 @@ if (navigator.clipboard) {
 }
 </scr` + `ipt>`;
 
+// The wordmark is set in its own face wherever it appears in prose. The walk
+// alternates tags and text, so a name inside an attribute or a URL is never
+// rewritten, and code keeps the plain face a reader would type.
+function wordmarked(html, site) {
+  if (!site.wordmark) return html;
+  const word = site.wordmark.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`\\b${word}\\b`, "g");
+  let literal = 0;
+  return html.replace(/<[^>]*>|[^<]+/g, (chunk) => {
+    if (!chunk.startsWith("<"))
+      return literal ? chunk : chunk.replace(pattern, '<span class="wordmark">$&</span>');
+    if (/^<(code|pre)[\s>]/i.test(chunk)) literal++;
+    else if (/^<\/(code|pre)>/i.test(chunk)) literal = Math.max(0, literal - 1);
+    return chunk;
+  });
+}
+
 function pageShell({ site, segments, title: pageTitle, tab, description, trail, body }) {
   const canonical = site.siteUrl
     ? `<link rel="canonical" href="${escapeHtml(site.siteUrl + url(segments))}">`
@@ -399,12 +416,12 @@ ${canonical}
 <body>
 <div class="wrap">
 ${nav ? `<div>
-<p class="brand"><a href="/">${segments.length ? "" : mark(site)}<strong>${escapeHtml(site.name)}</strong></a></p>
+<p class="brand"><a href="/">${segments.length ? "" : mark(site)}<strong>${wordmarked(escapeHtml(site.name), site)}</strong></a></p>
 ${nav}
 </div>` : ""}
 <main>
 ${breadcrumbs(trail, site, segments)}
-${body}
+${wordmarked(body, site)}
 ${segments.length ? pager(site.tree, segments) : ""}
 ${footer(site)}
 </main>

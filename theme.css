@@ -1,7 +1,9 @@
 /* Every literal colour is a token; changes land in one place. */
+@import url("https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap");
 :root { color-scheme: light dark;
   --font-body: ui-serif, Georgia, "Times New Roman", serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-wordmark: "UnifrakturCook", "UnifrakturMaguntia", var(--font-body);
   --fg: #111;      --dim: #555;
   --bg: #fdfdfc;   --line: #e3e3e0;
   --code-bg: #f4f4f1;
@@ -60,6 +62,11 @@ article > p:first-child { color: var(--dim); font-size: 1.05rem; }
 p, li { margin: .6rem 0; }
 
 a { color: var(--accent); }
+
+/* The name, set in its own face. Blackletter runs small against a serif at the
+   same size, so it is nudged up to sit level with the words either side. */
+.wordmark { font-family: var(--font-wordmark); font-weight: 700;
+            font-size: 1.06em; letter-spacing: .01em; }
 .dim { color: var(--dim); font-size: .9rem; }
 hr { border: 0; border-top: 1px solid var(--line); margin: 2.5rem 0; }
 blockquote { color: var(--dim); border-left: 2px solid var(--line);
@@ -108,7 +115,7 @@ footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line);
    page opens on words. It unfloats where a column that narrow would leave the
    text in a gutter. */
 .cover { float: right; max-width: 45%; margin: .2rem 0 1rem 1.75rem; }
-.cover img { max-width: 12rem; width: 100%; height: auto; border-radius: 6px;
+.cover img { max-width: 16rem; width: 100%; height: auto; border-radius: 6px;
              border: 1px solid var(--line); }
 .cover .credit { display: block; margin-top: .4rem; font-size: .78rem;
                  line-height: 1.45; color: var(--dim); }

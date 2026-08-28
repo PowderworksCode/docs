@@ -23,6 +23,7 @@ Options:
   --static <dir>       Directory copied verbatim into the output
   --license <text>     Footer license line
   --copyright <name>   Footer copyright, as (c) <year> <name>, replacing the above
+  --wordmark <text>    Set this word in the wordmark face wherever it appears
   -h, --help`);
 }
 
@@ -55,6 +56,7 @@ try {
     staticDir: option("static"),
     license: option("license"),
     copyright: option("copyright"),
+    wordmark: option("wordmark"),
     logo: option("logo"),
   });
 } catch (error) {
