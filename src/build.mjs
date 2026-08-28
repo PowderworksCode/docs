@@ -390,13 +390,16 @@ const marks = (site) => (site.wordmarks ?? []).filter((mark) => mark.text);
 // that arrives late should arrive, not flash the serif on its way in, and the
 // preload below is what keeps that wait down to nothing worth seeing.
 function wordmarkFace(options) {
+  const declared = new Set();
   return marks(options)
     .map((mark, index) => {
       if (!mark.font) return "";
-      const face = mark.woff2
-        ? `@font-face { font-family: ${mark.font}; font-style: normal;\n` +
+      // Several names can share one face; it is fetched and declared once.
+      const face = mark.woff2 && !declared.has(mark.woff2)
+        ? (declared.add(mark.woff2),
+          `@font-face { font-family: ${mark.font}; font-style: normal;\n` +
           `  font-weight: 400; font-display: block;\n` +
-          `  src: url("${mark.woff2}") format("woff2"); }\n`
+          `  src: url("${mark.woff2}") format("woff2"); }\n`)
         : "";
       return `\n${face}.wordmark-${index + 1} { font-family: ${mark.font}, var(--font-body); }\n`;
     })
@@ -406,10 +409,9 @@ function wordmarkFace(options) {
 // Fonts are fetched in CORS mode whatever their origin, so a preload without
 // crossorigin is a second download rather than a head start.
 function fontLink(site) {
-  return marks(site)
-    .filter((mark) => mark.woff2)
-    .map((mark) => `<link rel="preload" as="font" type="font/woff2" ` +
-      `href="${escapeHtml(mark.woff2)}" crossorigin>`)
+  return [...new Set(marks(site).map((mark) => mark.woff2).filter(Boolean))]
+    .map((woff2) => `<link rel="preload" as="font" type="font/woff2" ` +
+      `href="${escapeHtml(woff2)}" crossorigin>`)
     .join("\n");
 }
 
@@ -421,9 +423,14 @@ function wordmarked(html, site) {
   if (!wanted.length) return html;
   // Longest first, so a name containing another name wins the match it should.
   const order = [...wanted].sort((a, b) => b.text.length - a.text.length);
-  const index = new Map(wanted.map((mark, at) => [mark.text, at + 1]));
+  // A name is written to fit the column it lives in, so the space between its
+  // words may have been a line break by the time it is rendered.
+  const flat = (text) => text.replace(/\s+/g, " ");
+  const index = new Map(wanted.map((mark, at) => [flat(mark.text), at + 1]));
   const pattern = new RegExp(
-    `\\b(?:${order.map((mark) => mark.text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\b`,
+    `\\b(?:${order
+      .map((mark) => mark.text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+"))
+      .join("|")})\\b`,
     "g",
   );
   let literal = 0;
@@ -432,7 +439,7 @@ function wordmarked(html, site) {
       return literal
         ? chunk
         : chunk.replace(pattern, (word) =>
-            `<span class="wordmark wordmark-${index.get(word)}">${word}</span>`);
+            `<span class="wordmark wordmark-${index.get(flat(word))}">${word}</span>`);
     if (/^<(code|pre)[\s>]/i.test(chunk)) literal++;
     else if (/^<\/(code|pre)>/i.test(chunk)) literal = Math.max(0, literal - 1);
     return chunk;
