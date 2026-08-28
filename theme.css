@@ -5,11 +5,11 @@
   --fg: #111;      --dim: #555;
   --bg: #fdfdfc;   --line: #e3e3e0;
   --code-bg: #f4f4f1;
-  --accent: #a4432b;
+  --accent: #0000ee;
 }
 @media (prefers-color-scheme: dark) {
   :root { --fg: #e8e8e6; --dim: #a0a09b; --bg: #16161a;
-          --line: #2c2c31; --code-bg: #1e1e23; --accent: #e08a68; }
+          --line: #2c2c31; --code-bg: #1e1e23; --accent: #8ab4f8; }
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--fg);
