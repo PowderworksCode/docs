@@ -8,7 +8,8 @@
   },
   "files": [
     "src",
-    "theme.css"
+    "theme.css",
+    "tools"
   ],
   "scripts": {
     "selfcheck": "node src/cli.mjs build example --out /tmp/pw-docs-selfcheck --site-url https://example.com --name Example --github PowderworksCode/docs"

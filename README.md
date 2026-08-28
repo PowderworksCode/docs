@@ -46,6 +46,26 @@ HTML, so agents can fetch either form without content negotiation.
 Emitted alongside the pages: `sitemap.xml`, `llms.txt`, `404.html`, and
 `theme.css` wherever a page references it.
 
+## The card a link shows
+
+`--social` names the image; `tools/social-card.py` draws one to the same bones
+for every site — the name in the site's own face, its tagline, its domain, its
+logo down the right. Needs Pillow, and a `ttf` or `otf` rather than the `woff2`
+the site serves, because Pillow cannot read `woff2`. A URL is fetched once.
+
+```sh
+python3 node_modules/powderworks-docs/tools/social-card.py \
+  --name Straitjacket \
+  --tagline "A secret scanner, but for slop." \
+  --url straitjacket.dev \
+  --logo public/engraving.jpg \
+  --font https://raw.githubusercontent.com/google/fonts/main/ofl/x/X.ttf \
+  --out public/social.png
+```
+
+A long name wraps rather than shrinking past the point where it would read
+smaller than its own tagline. Without a logo the text simply has the width.
+
 ## Serving
 
 The output is plain files; anything that serves static assets works. On
