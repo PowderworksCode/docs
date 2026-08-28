@@ -17,6 +17,8 @@ powderworks-docs build <contentDir> --out <outDir> \
   --github PowderworksCode/straitjacket \
   --license MIT \
   --wordmark Straitjacket \
+  --wordmark-font '"Manufacturing Consent"' \
+  --wordmark-css 'https://fonts.googleapis.com/css2?family=Manufacturing+Consent&display=optional' \
   --static ./public
 ```
 

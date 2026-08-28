@@ -1,9 +1,8 @@
 /* Every literal colour is a token; changes land in one place. */
-@import url("https://fonts.googleapis.com/css2?family=Manufacturing+Consent&display=swap");
 :root { color-scheme: light dark;
   --font-body: ui-serif, Georgia, "Times New Roman", serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-wordmark: "Manufacturing Consent", var(--font-body);
+  --font-wordmark: var(--font-body);
   --fg: #111;      --dim: #555;
   --bg: #fdfdfc;   --line: #e3e3e0;
   --code-bg: #f4f4f1;

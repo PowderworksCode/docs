@@ -55,7 +55,10 @@ function renderMarkdown(text) {
 export async function build(contentDir, outDir, options) {
   const tree = await readTree(path.resolve(contentDir));
   const site = { ...options, name: options.name ?? title(tree) ?? "docs", tree };
-  const theme = await readFile(new URL("../theme.css", import.meta.url), "utf8");
+  const theme = await readFile(new URL("../theme.css", import.meta.url), "utf8") +
+    (options.wordmarkFont
+      ? `\n:root { --font-wordmark: ${options.wordmarkFont}, var(--font-body); }\n`
+      : "");
 
   // Pages reference ./theme.css, so every emitted directory carries a copy.
   for (const { segments } of walkPaths(tree, [])) {
@@ -380,6 +383,21 @@ if (navigator.clipboard) {
 }
 </scr` + `ipt>`;
 
+// The face for the wordmark, fetched in the head beside the stylesheet rather
+// than imported from inside it. An @import is found only once the stylesheet
+// it sits in has been fetched and parsed, which is a round trip too late: the
+// fallback paints first and the swap is the flicker. Preconnect covers the
+// second origin the stylesheet will send the browser to.
+function fontLink(site) {
+  if (!site.wordmarkCss) return "";
+  const href = escapeHtml(site.wordmarkCss);
+  const origins = /^https:\/\/fonts\.googleapis\.com\//.test(site.wordmarkCss)
+    ? `<link rel="preconnect" href="https://fonts.googleapis.com">\n` +
+      `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n`
+    : "";
+  return `${origins}<link rel="stylesheet" href="${href}">`;
+}
+
 // The wordmark is set in its own face wherever it appears in prose. The walk
 // alternates tags and text, so a name inside an attribute or a URL is never
 // rewritten, and code keeps the plain face a reader would type.
@@ -412,6 +430,7 @@ ${description ? `<meta name="description" content="${escapeHtml(description)}">`
 ${site.logo ? `<link rel="icon" href="${escapeHtml(site.logo)}">` : ""}
 ${canonical}
 <link rel="stylesheet" href="${"./".repeat(segments.length)}theme.css">
+${fontLink(site)}
 </head>
 <body>
 <div class="wrap">

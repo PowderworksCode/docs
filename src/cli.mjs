@@ -24,6 +24,8 @@ Options:
   --license <text>     Footer license line
   --copyright <name>   Footer copyright, as (c) <year> <name>, replacing the above
   --wordmark <text>    Set this word in the wordmark face wherever it appears
+  --wordmark-font <family>  CSS family for it, e.g. "Manufacturing Consent"
+  --wordmark-css <url>      Stylesheet that serves that family
   -h, --help`);
 }
 
@@ -57,6 +59,8 @@ try {
     license: option("license"),
     copyright: option("copyright"),
     wordmark: option("wordmark"),
+    wordmarkFont: option("wordmark-font"),
+    wordmarkCss: option("wordmark-css"),
     logo: option("logo"),
   });
 } catch (error) {
