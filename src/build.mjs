@@ -56,9 +56,7 @@ export async function build(contentDir, outDir, options) {
   const tree = await readTree(path.resolve(contentDir));
   const site = { ...options, name: options.name ?? title(tree) ?? "docs", tree };
   const theme = await readFile(new URL("../theme.css", import.meta.url), "utf8") +
-    (options.wordmarkFont
-      ? `\n:root { --font-wordmark: ${options.wordmarkFont}, var(--font-body); }\n`
-      : "");
+    wordmarkFace(options);
 
   // Pages reference ./theme.css, so every emitted directory carries a copy.
   for (const { segments } of walkPaths(tree, [])) {
@@ -385,19 +383,26 @@ if (navigator.clipboard) {
 }
 </scr` + `ipt>`;
 
-// The face for the wordmark, fetched in the head beside the stylesheet rather
-// than imported from inside it. An @import is found only once the stylesheet
-// it sits in has been fetched and parsed, which is a round trip too late: the
-// fallback paints first and the swap is the flicker. Preconnect covers the
-// second origin the stylesheet will send the browser to.
-function fontLink(site) {
-  if (!site.wordmarkCss) return "";
-  const href = escapeHtml(site.wordmarkCss);
-  const origins = /^https:\/\/fonts\.googleapis\.com\//.test(site.wordmarkCss)
-    ? `<link rel="preconnect" href="https://fonts.googleapis.com">\n` +
-      `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n`
+// The wordmark face, declared in the stylesheet the page already fetches and
+// served from wherever the site keeps it. Held rather than swapped: a face
+// that arrives late should arrive, not flash the serif on its way in, and the
+// preload below is what keeps that wait down to nothing worth seeing.
+function wordmarkFace(options) {
+  if (!options.wordmarkFont) return "";
+  const face = options.wordmarkWoff2
+    ? `@font-face { font-family: ${options.wordmarkFont}; font-style: normal;\n` +
+      `  font-weight: 400; font-display: block;\n` +
+      `  src: url("${options.wordmarkWoff2}") format("woff2"); }\n`
     : "";
-  return `${origins}<link rel="stylesheet" href="${href}">`;
+  return `\n${face}:root { --font-wordmark: ${options.wordmarkFont}, var(--font-body); }\n`;
+}
+
+// Fonts are fetched in CORS mode whatever their origin, so a preload without
+// crossorigin is a second download rather than a head start.
+function fontLink(site) {
+  if (!site.wordmarkWoff2) return "";
+  return `<link rel="preload" as="font" type="font/woff2" ` +
+    `href="${escapeHtml(site.wordmarkWoff2)}" crossorigin>`;
 }
 
 // The wordmark is set in its own face wherever it appears in prose. The walk
@@ -431,8 +436,8 @@ function pageShell({ site, segments, title: pageTitle, tab, description, trail, 
 ${description ? `<meta name="description" content="${escapeHtml(description)}">` : ""}
 ${site.logo ? `<link rel="icon" href="${escapeHtml(site.logo)}">` : ""}
 ${canonical}
-<link rel="stylesheet" href="${"./".repeat(segments.length)}theme.css">
 ${fontLink(site)}
+<link rel="stylesheet" href="${"./".repeat(segments.length)}theme.css">
 </head>
 <body>
 <div class="wrap">
