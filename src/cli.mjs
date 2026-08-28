@@ -20,6 +20,7 @@ Options:
   --description <text> Meta description for the root page
   --github <owner/repo|url>  Footer repository link
   --logo <path>        Small mark beside the site name and as favicon
+  --social <path>      Card image for links to this site, shown when unfurled
   --static <dir>       Directory copied verbatim into the output
   --license <text>     Footer license line
   --copyright <name>   Footer copyright, as (c) <year> <name>, replacing the above
@@ -75,6 +76,7 @@ try {
     name: option("name"),
     description: option("description"),
     github: option("github"),
+    social: option("social"),
     staticDir: option("static"),
     license: option("license"),
     copyright: option("copyright"),

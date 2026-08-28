@@ -446,10 +446,34 @@ function wordmarked(html, site) {
   });
 }
 
+// What a link to this page looks like when it is pasted somewhere else. The
+// card is per page rather than per site, because a link to one guide should
+// say which guide. The image is the site's, and has to be absolute: whoever
+// unfurls it is not resolving paths against this origin.
+function sharing(site, segments, title, description) {
+  if (!site.social || !site.siteUrl) return "";
+  const image = /^https?:\/\//.test(site.social) ? site.social : site.siteUrl + site.social;
+  const tags = [
+    ["og:type", "website"],
+    ["og:site_name", site.name],
+    ["og:title", title],
+    ["og:description", description],
+    ["og:url", site.siteUrl + url(segments)],
+    ["og:image", image],
+  ];
+  return tags
+    .filter(([, value]) => value)
+    .map(([property, value]) =>
+      `<meta property="${property}" content="${escapeHtml(String(value))}">`)
+    .concat('<meta name="twitter:card" content="summary_large_image">')
+    .join("\n");
+}
+
 function pageShell({ site, segments, title: pageTitle, tab, description, trail, body }) {
   const canonical = site.siteUrl
     ? `<link rel="canonical" href="${escapeHtml(site.siteUrl + url(segments))}">`
     : "";
+  const social = sharing(site, segments, tab ?? pageTitle, description);
   const nav = treeNav(site.tree, segments, site);
   return `<!doctype html>
 <html lang="en">
@@ -460,6 +484,7 @@ function pageShell({ site, segments, title: pageTitle, tab, description, trail, 
 ${description ? `<meta name="description" content="${escapeHtml(description)}">` : ""}
 ${site.logo ? `<link rel="icon" href="${escapeHtml(site.logo)}">` : ""}
 ${canonical}
+${social}
 ${fontLink(site)}
 <link rel="stylesheet" href="${"./".repeat(segments.length)}theme.css">
 </head>
