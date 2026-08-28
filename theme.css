@@ -2,7 +2,6 @@
 :root { color-scheme: light dark;
   --font-body: ui-serif, Georgia, "Times New Roman", serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-wordmark: var(--font-body);
   --fg: #111;      --dim: #555;
   --bg: #fdfdfc;   --line: #e3e3e0;
   --code-bg: #f4f4f1;
@@ -62,11 +61,11 @@ p, li { margin: .6rem 0; }
 
 a { color: var(--accent); }
 
-/* The name, set in its own face. Blackletter runs small against a serif at the
-   same size, so it is nudged up to sit level with the words either side. The
-   face has one weight, and saying so keeps a bold heading from smearing it. */
-.wordmark { font-family: var(--font-wordmark); font-weight: 400;
-            font-size: 1.06em; letter-spacing: .01em; }
+/* A name, set in its own face; the face itself arrives per site, as
+   .wordmark-1 and so on. Display faces run small against a serif at the same
+   size, so they are nudged up to sit level with the words either side, and the
+   weight is pinned because one-weight faces get smeared by a bold heading. */
+.wordmark { font-weight: 400; font-size: 1.06em; letter-spacing: .01em; }
 .dim { color: var(--dim); font-size: .9rem; }
 hr { border: 0; border-top: 1px solid var(--line); margin: 2.5rem 0; }
 blockquote { color: var(--dim); border-left: 2px solid var(--line);

@@ -383,39 +383,56 @@ if (navigator.clipboard) {
 }
 </scr` + `ipt>`;
 
-// The wordmark face, declared in the stylesheet the page already fetches and
-// served from wherever the site keeps it. Held rather than swapped: a face
+const marks = (site) => (site.wordmarks ?? []).filter((mark) => mark.text);
+
+// Each wordmark's face, declared in the stylesheet every page already fetches
+// and served from wherever the site keeps it. Held rather than swapped: a face
 // that arrives late should arrive, not flash the serif on its way in, and the
 // preload below is what keeps that wait down to nothing worth seeing.
 function wordmarkFace(options) {
-  if (!options.wordmarkFont) return "";
-  const face = options.wordmarkWoff2
-    ? `@font-face { font-family: ${options.wordmarkFont}; font-style: normal;\n` +
-      `  font-weight: 400; font-display: block;\n` +
-      `  src: url("${options.wordmarkWoff2}") format("woff2"); }\n`
-    : "";
-  return `\n${face}:root { --font-wordmark: ${options.wordmarkFont}, var(--font-body); }\n`;
+  return marks(options)
+    .map((mark, index) => {
+      if (!mark.font) return "";
+      const face = mark.woff2
+        ? `@font-face { font-family: ${mark.font}; font-style: normal;\n` +
+          `  font-weight: 400; font-display: block;\n` +
+          `  src: url("${mark.woff2}") format("woff2"); }\n`
+        : "";
+      return `\n${face}.wordmark-${index + 1} { font-family: ${mark.font}, var(--font-body); }\n`;
+    })
+    .join("");
 }
 
 // Fonts are fetched in CORS mode whatever their origin, so a preload without
 // crossorigin is a second download rather than a head start.
 function fontLink(site) {
-  if (!site.wordmarkWoff2) return "";
-  return `<link rel="preload" as="font" type="font/woff2" ` +
-    `href="${escapeHtml(site.wordmarkWoff2)}" crossorigin>`;
+  return marks(site)
+    .filter((mark) => mark.woff2)
+    .map((mark) => `<link rel="preload" as="font" type="font/woff2" ` +
+      `href="${escapeHtml(mark.woff2)}" crossorigin>`)
+    .join("\n");
 }
 
 // The wordmark is set in its own face wherever it appears in prose. The walk
 // alternates tags and text, so a name inside an attribute or a URL is never
 // rewritten, and code keeps the plain face a reader would type.
 function wordmarked(html, site) {
-  if (!site.wordmark) return html;
-  const word = site.wordmark.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const pattern = new RegExp(`\\b${word}\\b`, "g");
+  const wanted = marks(site);
+  if (!wanted.length) return html;
+  // Longest first, so a name containing another name wins the match it should.
+  const order = [...wanted].sort((a, b) => b.text.length - a.text.length);
+  const index = new Map(wanted.map((mark, at) => [mark.text, at + 1]));
+  const pattern = new RegExp(
+    `\\b(?:${order.map((mark) => mark.text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\b`,
+    "g",
+  );
   let literal = 0;
   return html.replace(/<[^>]*>|[^<]+/g, (chunk) => {
     if (!chunk.startsWith("<"))
-      return literal ? chunk : chunk.replace(pattern, '<span class="wordmark">$&</span>');
+      return literal
+        ? chunk
+        : chunk.replace(pattern, (word) =>
+            `<span class="wordmark wordmark-${index.get(word)}">${word}</span>`);
     if (/^<(code|pre)[\s>]/i.test(chunk)) literal++;
     else if (/^<\/(code|pre)>/i.test(chunk)) literal = Math.max(0, literal - 1);
     return chunk;

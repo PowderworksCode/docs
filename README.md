@@ -19,6 +19,9 @@ powderworks-docs build <contentDir> --out <outDir> \
   --wordmark Straitjacket \
   --wordmark-font '"Manufacturing Consent"' \
   --wordmark-woff2 /manufacturing-consent-latin.woff2 \
+  --wordmark Powderworks \
+  --wordmark-font '"IM Fell English SC"' \
+  --wordmark-woff2 /im-fell-english-sc-latin.woff2 \
   --static ./public
 ```
 

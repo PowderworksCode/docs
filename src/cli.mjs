@@ -23,7 +23,8 @@ Options:
   --static <dir>       Directory copied verbatim into the output
   --license <text>     Footer license line
   --copyright <name>   Footer copyright, as (c) <year> <name>, replacing the above
-  --wordmark <text>    Set this word in the wordmark face wherever it appears
+  --wordmark <text>    Set this word in its own face wherever it appears;
+                       repeat the trio below once per word, in the same order
   --wordmark-font <family>  CSS family for it, e.g. "Manufacturing Consent"
   --wordmark-woff2 <url>    The woff2 for it, served by this site
   -h, --help`);
@@ -42,11 +43,30 @@ function option(name) {
   return value;
 }
 
+// Options that may repeat, read in the order given. The wordmark trio is
+// zipped by position: the first font and woff2 belong to the first word.
+function every(name) {
+  const found = [];
+  for (let value = option(name); value !== undefined; value = option(name))
+    found.push(value);
+  return found;
+}
+
 const contentDir = args.shift();
 const outDir = option("out");
 if (!contentDir || !outDir) {
   usage();
   process.exit(2);
+}
+
+function wordmarks() {
+  const fonts = every("wordmark-font");
+  const files = every("wordmark-woff2");
+  return every("wordmark").map((text, index) => ({
+    text,
+    font: fonts[index],
+    woff2: files[index],
+  }));
 }
 
 try {
@@ -58,9 +78,7 @@ try {
     staticDir: option("static"),
     license: option("license"),
     copyright: option("copyright"),
-    wordmark: option("wordmark"),
-    wordmarkFont: option("wordmark-font"),
-    wordmarkWoff2: option("wordmark-woff2"),
+    wordmarks: wordmarks(),
     logo: option("logo"),
   });
 } catch (error) {
