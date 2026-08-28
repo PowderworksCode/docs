@@ -260,11 +260,12 @@ async function writeNotFound(site, outDir) {
 
 // --- page shell -----------------------------------------------------------------
 
-// Every page but the landing opens with the same trail, so the top of one page
-// sits where the top of the last one did. Keying this off the trail instead
-// meant a section index had no crumbs while the pages inside it did.
+// Every page opens at the same height. Pages below the landing show a trail;
+// the landing holds the same space open and shows nothing, so moving between
+// them does not shift the title. Keying this off the trail instead meant a
+// section index had no crumbs while the pages inside it did.
 function breadcrumbs(trail, site, segments) {
-  if (!segments.length) return "";
+  if (!segments.length) return `<div class="crumbs" aria-hidden="true"></div>`;
   let href = "";
   const parts = [{ label: escapeHtml(site.name), href: "/" }];
   for (const node of trail) {
