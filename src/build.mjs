@@ -313,7 +313,7 @@ async function writePage({ outDir, title: pageTitle, ...context }) {
   context.body = `<h1>${escapeHtml(pageTitle)}</h1>\n` + context.body;
   const target = path.join(outDir, ...context.segments, "index.html");
   await mkdir(path.dirname(target), { recursive: true });
-  await writeFile(target, pageShell(context));
+  await writeFile(target, pageShell({ ...context, title: pageTitle }));
 }
 
 function escapeHtml(text) {
