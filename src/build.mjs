@@ -317,6 +317,33 @@ function pager(tree, segments) {
   );
 }
 
+// The one script this generator emits. It adds a copy button to each code
+// block, and it builds the buttons rather than shipping them in the markup, so
+// a reader without JavaScript is never offered a button that cannot work.
+const COPY_SCRIPT = `<script>
+if (navigator.clipboard) {
+  for (const pre of document.querySelectorAll("main pre")) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "copy";
+    button.textContent = "Copy";
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText((pre.querySelector("code") || pre).textContent);
+        button.textContent = "Copied";
+      } catch {
+        button.textContent = "Copy failed";
+      }
+      setTimeout(() => { button.textContent = "Copy"; }, 1500);
+    });
+    const holder = document.createElement("div");
+    holder.className = "codeblock";
+    pre.replaceWith(holder);
+    holder.append(pre, button);
+  }
+}
+</scr` + `ipt>`;
+
 function pageShell({ site, segments, title: pageTitle, description, trail, body }) {
   const canonical = site.siteUrl
     ? `<link rel="canonical" href="${escapeHtml(site.siteUrl + url(segments))}">`
@@ -346,6 +373,7 @@ ${segments.length ? pager(site.tree, segments) : ""}
 ${footer(site)}
 </main>
 </div>
+${COPY_SCRIPT}
 </body>
 </html>
 `;

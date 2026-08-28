@@ -1,6 +1,6 @@
 # powderworks-docs
 
-Turns a tree of markdown into a tree of indexes. No client script, ever.
+Turns a tree of markdown into a tree of indexes. One small script, to copy a code block; nothing else runs in the browser.
 
 Every directory is a section; every section gets an index page listing its
 children — title and one-line description from frontmatter. Breadcrumbs come

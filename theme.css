@@ -69,6 +69,15 @@ ul.index li { margin: 0 0 1rem; padding-bottom: 1rem; border-bottom: 1px solid v
 ul.index li:last-child { border-bottom: 0; }
 ul.index span.dim { display: block; margin-top: .15rem; }
 
+/* The copy button the one emitted script builds, sitting over its block. It
+   appears on hover or focus, and never covers the first line's text. */
+.codeblock { position: relative; }
+.copy { position: absolute; top: .45rem; right: .45rem; cursor: pointer;
+        font-family: var(--font-body); font-size: .75rem; line-height: 1.4;
+        color: var(--dim); background: var(--bg); border: 1px solid var(--line);
+        border-radius: 4px; padding: .1rem .45rem; opacity: 0; }
+.codeblock:hover .copy, .copy:focus { opacity: 1; }
+
 code, pre { font-family: var(--font-mono); font-size: .875rem; }
 pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px;
       padding: .85rem 1rem; overflow-x: auto; line-height: 1.5; }

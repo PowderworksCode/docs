@@ -4,7 +4,7 @@
 //   powderworks-docs build <contentDir> --out <outDir> [options]
 //
 // Every directory is a section; every section gets an index page listing its
-// children. No client script is emitted, ever.
+// children. The only script emitted is the one that copies a code block.
 
 import { build } from "./build.mjs";
 
