@@ -4,7 +4,7 @@
 //   powderworks-docs build <contentDir> --out <outDir> [options]
 //
 // Every directory is a section; every section gets an index page listing its
-// children. No client script is emitted, ever.
+// children. The only script emitted is the one that copies a code block.
 
 import { build } from "./build.mjs";
 
@@ -22,6 +22,11 @@ Options:
   --logo <path>        Small mark beside the site name and as favicon
   --static <dir>       Directory copied verbatim into the output
   --license <text>     Footer license line
+  --copyright <name>   Footer copyright, as (c) <year> <name>, replacing the above
+  --wordmark <text>    Set this word in its own face wherever it appears;
+                       repeat the trio below once per word, in the same order
+  --wordmark-font <family>  CSS family for it, e.g. "Manufacturing Consent"
+  --wordmark-woff2 <url>    The woff2 for it, served by this site
   -h, --help`);
 }
 
@@ -38,11 +43,30 @@ function option(name) {
   return value;
 }
 
+// Options that may repeat, read in the order given. The wordmark trio is
+// zipped by position: the first font and woff2 belong to the first word.
+function every(name) {
+  const found = [];
+  for (let value = option(name); value !== undefined; value = option(name))
+    found.push(value);
+  return found;
+}
+
 const contentDir = args.shift();
 const outDir = option("out");
 if (!contentDir || !outDir) {
   usage();
   process.exit(2);
+}
+
+function wordmarks() {
+  const fonts = every("wordmark-font");
+  const files = every("wordmark-woff2");
+  return every("wordmark").map((text, index) => ({
+    text,
+    font: fonts[index],
+    woff2: files[index],
+  }));
 }
 
 try {
@@ -53,6 +77,8 @@ try {
     github: option("github"),
     staticDir: option("static"),
     license: option("license"),
+    copyright: option("copyright"),
+    wordmarks: wordmarks(),
     logo: option("logo"),
   });
 } catch (error) {

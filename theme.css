@@ -30,13 +30,14 @@ nav.tree { position: sticky; top: 2rem; font-size: .95rem; }
 nav.tree ul { list-style: none; margin: 0; padding: 0; }
 nav.tree ul ul { padding-left: 1rem; }
 nav.tree a { color: var(--fg); text-decoration: none; display: block;
-             padding: .18rem 0; }
+             position: relative; padding: .18rem 0 .18rem 1.45em; }
 nav.tree a:hover { text-decoration: underline; text-underline-offset: 3px; }
 nav.tree a.current { font-weight: 700; text-decoration: underline;
                      text-underline-offset: 3px; }
 nav.tree li.group > a { font-weight: 700; }
 
-.crumbs { font-size: .9rem; margin-bottom: 2rem; }
+.crumbs { font-size: .9rem; line-height: 1.65; min-height: 1.65em;
+          margin-bottom: .75rem; }
 
 /* Previous and next, in sidebar order. */
 .pager { display: flex; justify-content: space-between; gap: 1.5rem;
@@ -44,12 +45,27 @@ nav.tree li.group > a { font-weight: 700; }
          font-size: .95rem; }
 .pager .next { margin-left: auto; text-align: right; }
 
-h1 { font-size: 2rem; letter-spacing: -.02em; margin: 0 0 .5rem; }
-h2 { font-size: 1.15rem; letter-spacing: -.01em; margin: 2.25rem 0 .6rem; }
+h1 { font-size: 2rem; letter-spacing: -.02em; line-height: 1.15;
+     margin: 0 0 .4rem; }
+h2 { font-size: 1.15rem; letter-spacing: -.01em; margin: 2.25rem 0 .6rem;
+     clear: both; }
+
+/* A heading links to itself. The mark keeps its space while invisible, so
+   hovering a heading does not nudge the line it sits on. */
+.anchor { margin-left: .35rem; font-weight: 400; text-decoration: none;
+          color: var(--dim); opacity: 0; }
+h2:hover .anchor, h3:hover .anchor, h4:hover .anchor,
+h5:hover .anchor, h6:hover .anchor, .anchor:focus { opacity: 1; }
 article > p:first-child { color: var(--dim); font-size: 1.05rem; }
 p, li { margin: .6rem 0; }
 
 a { color: var(--accent); }
+
+/* A name, set in its own face; the face itself arrives per site, as
+   .wordmark-1 and so on. Display faces run small against a serif at the same
+   size, so they are nudged up to sit level with the words either side, and the
+   weight is pinned because one-weight faces get smeared by a bold heading. */
+.wordmark { font-weight: 400; font-size: 1.06em; letter-spacing: .01em; }
 .dim { color: var(--dim); font-size: .9rem; }
 hr { border: 0; border-top: 1px solid var(--line); margin: 2.5rem 0; }
 blockquote { color: var(--dim); border-left: 2px solid var(--line);
@@ -61,6 +77,19 @@ ul.index li { margin: 0 0 1rem; padding-bottom: 1rem; border-bottom: 1px solid v
 ul.index li:last-child { border-bottom: 0; }
 ul.index span.dim { display: block; margin-top: .15rem; }
 
+/* The copy button the one emitted script builds, sitting over its block.
+   flow-root because the block it wraps is a formatting context of its own and
+   steps aside for a float, while a plain div would run on underneath one and
+   take the button out over the image with it. */
+.codeblock { position: relative; display: flow-root; }
+.codeblock pre { padding-right: 2.9rem; }
+.copy { position: absolute; top: .4rem; right: .4rem; cursor: pointer;
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 1.7rem; height: 1.7rem; padding: 0; color: var(--dim);
+        background: var(--bg); border: 1px solid var(--line);
+        border-radius: 4px; }
+.copy:hover { color: var(--fg); }
+
 code, pre { font-family: var(--font-mono); font-size: .875rem; }
 pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px;
       padding: .85rem 1rem; overflow-x: auto; line-height: 1.5; }
@@ -71,12 +100,32 @@ th, td { border: 1px solid var(--line); padding: .45rem .7rem; text-align: left;
 th { background: var(--code-bg); }
 
 footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line);
-         color: var(--dim); font-size: .9rem; }
+         color: var(--dim); font-size: .9rem; text-align: right; }
 
-.brand { margin: 0 0 1rem; }
-.brand a { color: var(--fg); text-decoration: none;
-           display: inline-flex; align-items: center; gap: .45rem; }
-.tree-logo { width: 1.3rem; height: auto; display: inline-block; }
-.cover { text-align: center; margin: .5rem 0 1.25rem; }
-.cover img { max-width: 12rem; height: auto; border-radius: 6px;
+/* The name is the loudest thing in the column, because it is the one thing
+   there that is not navigation. */
+.brand { margin: 0 0 1.1rem; font-size: 1.5rem; line-height: 1.2; }
+.brand a { color: var(--fg); text-decoration: none; position: relative;
+           display: inline-block; padding-left: 1.25em; }
+
+/* The mark sits in a gutter every link reserves, so the list does not shift
+   as it moves from one entry to the next. */
+.tree-mark { position: absolute; left: 0; top: 50%; width: 1.05em;
+             height: auto; transform: translateY(-50%); }
+/* The cover engraving sits beside the opening paragraph, not above it, so the
+   page opens on words. It unfloats where a column that narrow would leave the
+   text in a gutter. */
+.cover { float: right; max-width: 45%; margin: .2rem 0 1rem 1.75rem; }
+.cover img { max-width: 16rem; width: 100%; height: auto; border-radius: 6px;
              border: 1px solid var(--line); }
+.cover .credit { display: block; margin-top: .4rem; font-size: .78rem;
+                 line-height: 1.45; color: var(--dim); }
+
+/* Something served from elsewhere, framed like a code block so it reads as
+   part of the page rather than as a hole punched through it. */
+.embed { display: block; width: 100%; height: 20rem; margin: 1.5rem 0;
+         border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
+@media (max-width: 40rem) {
+  .cover { float: none; max-width: none; margin: .5rem 0 1.25rem;
+           text-align: center; }
+}

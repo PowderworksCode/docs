@@ -1,6 +1,6 @@
 # powderworks-docs
 
-Turns a tree of markdown into a tree of indexes. No client script, ever.
+Turns a tree of markdown into a tree of indexes. One small script, to copy a code block; nothing else runs in the browser.
 
 Every directory is a section; every section gets an index page listing its
 children — title and one-line description from frontmatter. Breadcrumbs come
@@ -16,6 +16,12 @@ powderworks-docs build <contentDir> --out <outDir> \
   --description "A secret scanner, but for slop." \
   --github PowderworksCode/straitjacket \
   --license MIT \
+  --wordmark Straitjacket \
+  --wordmark-font '"Manufacturing Consent"' \
+  --wordmark-woff2 /manufacturing-consent-latin.woff2 \
+  --wordmark Powderworks \
+  --wordmark-font '"IM Fell English SC"' \
+  --wordmark-woff2 /im-fell-english-sc-latin.woff2 \
   --static ./public
 ```
 
@@ -31,7 +37,8 @@ content/
 ```
 
 Frontmatter keys: `title`, `description`, `order` (lower sorts first within
-its section).
+its section), and `tab-title` for a browser tab that should not read like the
+heading — given, it is the whole title, with no site name appended.
 
 Each page also emits its markdown source as `index.md` beside its rendered
 HTML, so agents can fetch either form without content negotiation.
