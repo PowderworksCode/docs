@@ -131,15 +131,16 @@ def from_registry(key, where, root):
         "name": mine.get("name"),
         "tagline": mine.get("tagline", ""),
         "url": (mine.get("url") or "").removeprefix("https://").removeprefix("http://").rstrip("/"),
-        "logo": named(root, "cover"),
+        "logo": named(root, "cover") or named(where.parent / "assets" / key, "cover"),
         "font": mine.get("wordmark", {}).get("ttf"),
         "out": str(Path(root) / "social.png"),
     }
 
 
 def named(root, stem):
-    """Pictures are found by name in the site's static directory, not recorded
-    as paths in a file that lives in another repository."""
+    """Pictures are found by name rather than by a path written down somewhere.
+    A site's own copy wins; otherwise the one that ships beside the config, so
+    the workshop's pages can show a project's mark without cloning it."""
     for found in sorted(Path(root).glob(f"{stem}.*")):
         return str(found)
     return None

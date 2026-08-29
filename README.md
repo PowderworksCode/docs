@@ -23,15 +23,20 @@ Anything passed on the command line still wins, and `--config` points at a
 different file. Adding a site means an entry here, which is the trade: one
 place to change a name, one repository to open a pull request against.
 
-Pictures are not in the file. Every site keeps the same three in its static
-directory, found by name rather than recorded as a path into another
-repository:
+Pictures live in `assets/<key>/` here, not in the sites, because the workshop's
+own pages show each project's mark and should not have to clone a repository to
+find one. The generator copies them into the output, and a site that keeps its
+own copy under the same name overwrites it.
 
 | file | what it is |
 | --- | --- |
-| `logo.*` | the mark, beside the site name and in the tab |
-| `cover.*` | the picture the landing opens with, and the card carries |
-| `social.png` | the card itself |
+| `assets/<key>/logo.*` | the mark, beside the site name and in the tab |
+| `assets/<key>/cover.*` | the picture the landing opens with, and the card carries |
+| `social.png` | the card itself, drawn into the site's static directory |
+
+The landing takes its name, tagline and tab from `[site.<key>]` too. A root
+`index.md` need carry no frontmatter at all; the tagline is set beneath the
+title as the lede.
 
 `--check` compares the committed card against what the config now says. It
 compares the inputs rather than the pixels — the words, the picture, the face

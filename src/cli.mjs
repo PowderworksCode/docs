@@ -6,7 +6,8 @@
 // Every directory is a section; every section gets an index page listing its
 // children. The only script emitted is the one that copies a code block.
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 import { parse } from "smol-toml";
 import { build } from "./build.mjs";
 
@@ -75,6 +76,9 @@ function registry() {
   const { org = {}, site = {} } = parse(readFileSync(where, "utf8"));
   const mine = site[key];
   if (!mine) throw new Error(`no [site.${key}] in ${where}`);
+  // A site's mark and cover live beside this file rather than in the site, so
+  // the workshop's own pages can show them without reaching into each repo.
+  const pictures = new URL(`./assets/${key}/`, pathToFileURL(where)).pathname;
   const face = (mark) =>
     (mark?.words ?? []).map((text) => ({
       text,
@@ -85,6 +89,8 @@ function registry() {
     siteUrl: mine.url?.replace(/\/$/, ""),
     name: mine.name,
     description: mine.tagline,
+    tabTitle: mine["tab-title"],
+    assetsDir: existsSync(pictures) ? pictures : undefined,
     github: mine.github,
     logo: mine.logo,
     social: mine.social,
