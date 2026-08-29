@@ -127,6 +127,32 @@ site in the registry, with its tagline, its links and the mark that ships from
 `assets/<key>/`. The marks are copied into the output; covers are not, because
 no site needs another site's cover.
 
+## The example site
+
+`example/` is this generator pointed at a small tree that uses everything it
+has: a hero and a cover, sections and section indexes, ordered frontmatter and
+a tab-title, code blocks, tables, quotes, the fleet, the markdown twins, and
+the index that folds behind a button on a phone. It builds from `../src`
+rather than from a published copy, so a change to the generator shows up on the
+next build with nothing to publish first.
+
+```sh
+cd example
+bun install
+bun run build      # writes example/out
+bun run dev        # serves it at localhost:8787, worker and all
+bun run preview    # uploads a version and prints its preview URL
+bun run deploy     # promotes a build to the Worker's route
+```
+
+`bun run preview` is `wrangler versions upload`: a URL nobody else is routed
+to, which is the one to paste into a pull request. Workers Builds settings are
+root directory `example`, build `bun run build`, deploy `bun run deploy`.
+
+The demonstration is also the selfcheck: `bun run selfcheck` at the root builds
+the same tree and throws away the output, which is enough to catch a generator
+change that stops producing pages at all.
+
 ## Serving
 
 The output is plain files; anything that serves static assets works. On

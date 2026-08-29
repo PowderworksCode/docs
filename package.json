@@ -12,7 +12,7 @@
     "tools"
   ],
   "scripts": {
-    "selfcheck": "node src/cli.mjs build example --out /tmp/pw-docs-selfcheck --site-url https://example.com --name Example --github PowderworksCode/docs"
+    "selfcheck": "node src/cli.mjs build example/content --out /tmp/pw-docs-selfcheck --site example --static example/public"
   },
   "dependencies": {
     "marked": "^16.4.1",
