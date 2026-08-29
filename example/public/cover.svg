@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" role="img"
+     aria-label="A stack of pages, each one an index of the pages below it">
+  <style>
+    .sheet { fill: #fdfdfc; stroke: #c9c9c4; stroke-width: 2; }
+    .rule  { stroke: #c9c9c4; stroke-width: 3; stroke-linecap: round; }
+    .head  { stroke: #16161a; stroke-width: 5; stroke-linecap: round; }
+    @media (prefers-color-scheme: dark) {
+      .sheet { fill: #1e1e23; stroke: #3a3a41; }
+      .rule  { stroke: #3a3a41; }
+      .head  { stroke: #e8e8e6; }
+    }
+  </style>
+  <g>
+    <rect class="sheet" x="26" y="26" width="200" height="150" rx="6"/>
+    <rect class="sheet" x="48" y="48" width="200" height="150" rx="6"/>
+    <rect class="sheet" x="70" y="70" width="200" height="150" rx="6"/>
+    <path class="head" d="M92 104h84"/>
+    <path class="rule" d="M92 128h140M92 148h120M92 168h140M92 188h96"/>
+  </g>
+</svg>

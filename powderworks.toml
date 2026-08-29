@@ -111,6 +111,23 @@ license = "OFL-1.1"
 specimen = "https://fonts.google.com/specimen/Fraunces"
 github = "PowderworksCode/treebank"
 
+# The demonstration site, built from example/content in this repository. It is
+# not a project, so it is never listed in another site's fleet; it exists to be
+# looked at -- every feature the generator has, on one small tree, deployable
+# to a Worker in a minute. Its pictures are drawn in the example's own public/
+# directory rather than assets/example/, because a placeholder mark should not
+# sit in the drawer where the real ones are kept.
+[site.example]
+published = false
+name = "Example"
+tagline = "Everything this generator does, on one small tree."
+hero = true
+cover-alt = "A stack of pages, each one an index of the pages below it"
+cover-credit = "A placeholder, drawn in the example's own <code>public/</code>."
+url = "https://example.powderworks.dev"
+github = "PowderworksCode/docs"
+tab-title = "Example by Powderworks"
+
 [site.langbank]
 published = false
 name = "langbank"
