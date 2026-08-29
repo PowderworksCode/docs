@@ -5,6 +5,11 @@ name: release
 # and from the packed tarball rather than from the checkout -- the working tree
 # carries files that `files` does not ship, so a build that passes here and
 # fails for a site is exactly the mistake this step exists to catch.
+#
+# There is no publish token. npm trusts this workflow file in this repository,
+# by name, and issues the credential to the run itself; the OIDC token below is
+# the whole of the authentication. A secret that does not exist cannot leak,
+# be committed, expire on a Sunday, or ask a runner for a one-time password.
 on:
   push:
     tags: ["v*"]
@@ -57,11 +62,14 @@ jobs:
           test -s out/index.html
           grep -q 'class="burger"' out/index.html
 
-      # access and provenance are in publishConfig, so the manifest says what
-      # this publish is rather than the command line saying it somewhere else.
+      # Trusted publishing wants 11.5.1 or newer, and what the runner image
+      # happens to ship is not a thing to release on. Latest rather than a
+      # range: a range that reads ^11 would quietly step back off npm 12.
+      - name: An npm that can do this
+        run: npm install --global npm@latest
+
+      # access is in publishConfig, so the manifest says what this publish is
+      # rather than the command line saying it somewhere else. Provenance is
+      # not asked for either: a trusted publish attests itself.
       - name: Publish
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          printf '//registry.npmjs.org/:_authToken=%s\n' "${NPM_TOKEN}" > ~/.npmrc
-          npm publish
+        run: npm publish
