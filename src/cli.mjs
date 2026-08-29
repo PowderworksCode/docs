@@ -34,6 +34,8 @@ Options:
                        repeat the trio below once per word, in the same order
   --wordmark-font <family>  CSS family for it, e.g. "Manufacturing Consent"
   --wordmark-woff2 <url>    The woff2 for it, served by this site
+  --var <name>=<value> Replace {{name}} in the content with this value;
+                       repeat once per name
   -h, --help`);
 }
 
@@ -137,6 +139,22 @@ function markOf(beside, slug) {
   return found && `/assets/${slug}/${found}`;
 }
 
+// A site holds the values that move -- a version it documents, say -- because
+// they move on its own schedule and not the generator's. A name is given once:
+// two --var for the same one is a mistake worth hearing about rather than a
+// silent last-one-wins.
+function vars() {
+  const found = {};
+  for (const pair of every("var")) {
+    const at = pair.indexOf("=");
+    if (at < 1) throw new Error(`--var takes <name>=<value>, given ${pair}`);
+    const name = pair.slice(0, at).toLowerCase();
+    if (name in found) throw new Error(`--var ${name} given twice`);
+    found[name] = pair.slice(at + 1);
+  }
+  return found;
+}
+
 function wordmarks() {
   const fonts = every("wordmark-font");
   const files = every("wordmark-woff2");
@@ -159,6 +177,7 @@ const given = {
   copyright: option("copyright"),
   wordmarks: wordmarks(),
   logo: option("logo"),
+  vars: vars(),
 };
 
 try {

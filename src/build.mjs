@@ -82,7 +82,7 @@ async function conventional(options) {
 
 export async function build(contentDir, outDir, settings) {
   const options = await conventional(settings);
-  const tree = await readTree(path.resolve(contentDir));
+  const tree = await readTree(path.resolve(contentDir), options.vars ?? {});
   // Only a site that lists the fleet pays for it: the other projects' marks
   // and the faces their names are set in are fetched, declared and copied for
   // that page alone, and a site that never mentions them ships none of it.
@@ -140,7 +140,27 @@ function sourceText(pageOrSection) {
 
 // --- reading -----------------------------------------------------------------
 
-async function readTree(dir) {
+// `{{name}}` stands for a value the site passes in with --var, so a page can
+// name a version, a release or anything else that moves without being edited
+// every time it does. An unrecognised name is an error rather than text left
+// on the page: braces that reach a reader are a page that shipped unfinished.
+//
+// A name holds no dots and never follows a `$`, which is what keeps a workflow
+// example's `${{ github.token }}` out of it. Substitution runs on the source,
+// before frontmatter is split, so a title can carry one too, and the markdown
+// twin written beside each page carries the value rather than the braces.
+const VARIABLE = /(?<!\$)\{\{\s*([a-z][a-z0-9-]*)\s*\}\}/gi;
+
+function substitute(source, vars, where) {
+  return source.replace(VARIABLE, (all, name) => {
+    const value = vars[name.toLowerCase()];
+    if (value === undefined)
+      throw new Error(`${where}: no --var for ${all.replace(/\s+/g, "")}`);
+    return value;
+  });
+}
+
+async function readTree(dir, vars = {}) {
   const node = { dir, children: [] };
 
   for (const entry of (await readdir(dir, { withFileTypes: true })).sort(byName)) {
@@ -148,7 +168,7 @@ async function readTree(dir) {
     const file = path.join(dir, entry.name);
 
     if (entry.isDirectory()) {
-      const child = await readTree(file);
+      const child = await readTree(file, vars);
       if (child.root || child.children.length) {
         // A section's order lives on its index page's frontmatter.
         if (child.root?.frontmatter?.order !== undefined)
@@ -156,7 +176,9 @@ async function readTree(dir) {
         node.children.push({ ...child, slug: entry.name });
       }
     } else if (MARKDOWN.test(entry.name)) {
-      const { frontmatter, body } = splitFrontmatter(await readFile(file, "utf8"));
+      const { frontmatter, body } = splitFrontmatter(
+        substitute(await readFile(file, "utf8"), vars, file),
+      );
       const page = { file, slug: entry.name.replace(MARKDOWN, ""), frontmatter, body };
       if (page.slug === "index") node.root = page;
       else node.children.push(page);
