@@ -75,27 +75,28 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 2.5rem 0; }
 blockquote { color: var(--dim); border-left: 2px solid var(--line);
              margin: 1rem 0; padding-left: 1rem; }
 
-/* A site can put a picture behind everything. The page then reads off a panel
-   rather than off the picture, which is the only way the words stay words.
+/* A backdrop: a picture behind everything, distinct from the hero above, which
+   is the masthead. The page then reads off a panel rather than off the picture,
+   which is the only way the words stay words.
    Fixed, so the artwork holds still while the column scrolls over it.
    
    The veil is what makes that work in the dark. These pictures are drawn on
    white, and a near-black panel floating in a bright field is the wrong way
    round: the surround should be darker than the thing being read, not
    brighter. In the light the veil is clear and the artwork is itself. */
-body.has-hero {
-  background-image: linear-gradient(var(--veil), var(--veil)), var(--hero);
+body.has-backdrop {
+  background-image: linear-gradient(var(--veil), var(--veil)), var(--backdrop);
   background-position: center;
   background-size: cover;
   background-attachment: fixed;
   background-repeat: no-repeat;
 }
-body.has-hero .wrap { margin: 2.5rem auto; padding: 2.75rem 2.5rem 3rem;
+body.has-backdrop .wrap { margin: 2.5rem auto; padding: 2.75rem 2.5rem 3rem;
                       background: var(--bg); border: 1px solid var(--line);
                       border-radius: 8px; }
 @media (max-width: 46rem) {
-  body.has-hero { background-attachment: scroll; }
-  body.has-hero .wrap { margin: 0 auto; border: 0; border-radius: 0; }
+  body.has-backdrop { background-attachment: scroll; }
+  body.has-backdrop .wrap { margin: 0 auto; border: 0; border-radius: 0; }
 }
 
 /* The roster: every other site in the registry, with its own mark. */
@@ -153,10 +154,27 @@ footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line);
    page opens on words. It unfloats where a column that narrow would leave the
    text in a gutter. */
 .cover { float: right; max-width: 45%; margin: .2rem 0 1rem 1.75rem; }
-.cover img { max-width: 16rem; width: 100%; height: auto; border-radius: 6px;
-             border: 1px solid var(--line); }
-.cover .credit { display: block; margin-top: .4rem; font-size: .78rem;
-                 line-height: 1.45; color: var(--dim); }
+.cover img { display: block; margin-left: auto; max-width: 16rem; width: 100%;
+             height: auto; border-radius: 6px; border: 1px solid var(--line); }
+.cover .credit, .hero-art figcaption { display: block; margin-top: .5rem;
+                 font-size: .78rem; line-height: 1.45; color: var(--dim); }
+
+/* The masthead: the name at the size a name deserves, its line beneath, and
+   the picture beside them rather than floated into the paragraph after. The
+   two sit on one baseline grid so the block reads as one thing. */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) auto;
+        gap: 2.75rem; align-items: center; margin: 0 0 2.5rem; }
+.hero h1 { font-size: 3.1rem; line-height: 1.05; margin: 0 0 .55rem; }
+.hero .lede { font-size: 1.2rem; margin: 0 0 1.1rem; }
+.hero-words > p:last-child { margin-bottom: 0; }
+.hero-art { margin: 0; }
+.hero-art img { display: block; width: 15rem; max-width: 100%; height: auto;
+                border: 1px solid var(--line); border-radius: 6px; }
+@media (max-width: 46rem) {
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+  .hero h1 { font-size: 2.4rem; }
+  .hero-art img { width: 12rem; }
+}
 
 /* Something served from elsewhere, framed like a code block so it reads as
    part of the page rather than as a hole punched through it. */
