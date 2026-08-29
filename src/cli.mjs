@@ -4,7 +4,8 @@
 //   powderworks-docs build <contentDir> --out <outDir> [options]
 //
 // Every directory is a section; every section gets an index page listing its
-// children. The only script emitted is the one that copies a code block.
+// children. The only scripts emitted copy a code block and open the index
+// from behind a button on a narrow screen.
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { pathToFileURL } from "node:url";

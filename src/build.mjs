@@ -308,7 +308,7 @@ function treeNav(tree, current, site) {
     );
   };
   const items = tree.children.map((child) => render(child, [])).join("");
-  return `<nav class="tree" aria-label="Pages"><ul>${items}</ul></nav>`;
+  return `<nav class="tree" id="site-nav" aria-label="Pages"><ul>${items}</ul></nav>`;
 }
 
 function* walkPaths(node, base) {
@@ -424,11 +424,35 @@ function pager(tree, segments) {
   );
 }
 
-// The one script this generator emits. It adds a copy button to each code
-// block, and it builds the buttons rather than shipping them in the markup, so
-// a reader without JavaScript is never offered a button that cannot work. The
-// mark is a clipboard rather than the word, and it stays visible rather than
-// waiting for a hover, because a button nobody can see is one nobody uses.
+// One line in the head, before anything is painted, so the stylesheet can
+// collapse the index on a narrow screen without it appearing and vanishing
+// again. It is the whole of what the page needs to know at that point: whether
+// there is a script to open what has been closed.
+const JS_CLASS = `<script>document.documentElement.className = "js";</scr` + `ipt>`;
+
+// The menu button, on a narrow screen. It ships in the markup rather than
+// being built by script, the way the copy button is, because the stylesheet
+// only reveals it once the page has said that scripts run here: a reader
+// without them keeps the index they have always had, sitting above the words,
+// rather than a button that would not open anything. Bars closed, a cross
+// open; the stylesheet picks between them from aria-expanded, so the state is
+// said once and drawn from the saying.
+const BURGER = `<button class="burger" type="button" aria-controls="site-nav"` +
+  ` aria-expanded="false" aria-label="Menu" title="Menu">` +
+  `<svg class="bars" viewBox="0 0 16 16" width="18" height="18" fill="none"` +
+  ` stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true">` +
+  `<path d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11"/></svg>` +
+  `<svg class="ex" viewBox="0 0 16 16" width="18" height="18" fill="none"` +
+  ` stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true">` +
+  `<path d="M4 4l8 8M12 4l-8 8"/></svg>` +
+  `</button>`;
+
+// The first of the two scripts this generator emits. It adds a copy button to
+// each code block, and builds the buttons rather than shipping them in the
+// markup, so a reader without JavaScript is never offered a button that cannot
+// work. The mark is a clipboard rather than the word, and it stays visible
+// rather than waiting for a hover, because a button nobody can see is one
+// nobody uses.
 const COPY_SCRIPT = `<script>
 const svg = (body, width) =>
   '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="' +
@@ -462,6 +486,21 @@ if (navigator.clipboard) {
     pre.replaceWith(holder);
     holder.append(pre, button);
   }
+}
+</scr` + `ipt>`;
+
+// The second script: it works the menu button and nothing else. The index is
+// a list, not an overlay -- opening it pushes the page down rather than
+// covering it -- so there is no trapping of focus to do and no scrolling to
+// lock, and the whole tree shows, sub-lists and all, because a reader who
+// asked for the index asked for all of it.
+const MENU_SCRIPT = `<script>
+const menu = document.getElementById("site-nav");
+const burger = document.querySelector(".burger");
+if (menu && burger) {
+  burger.addEventListener("click", () => {
+    burger.setAttribute("aria-expanded", String(menu.classList.toggle("open")));
+  });
 }
 </scr` + `ipt>`;
 
@@ -612,11 +651,13 @@ ${canonical}
 ${social}
 ${fontLink(site)}
 <link rel="stylesheet" href="${"./".repeat(segments.length)}theme.css">
+${JS_CLASS}
 </head>
 <body>
 <div class="wrap${alone ? " solo" : ""}">
-${nav ? `<div>
+${nav ? `<div class="side">
 <p class="brand"><a href="/">${segments.length ? "" : mark(site)}<strong>${wordmarked(escapeHtml(site.name), site)}</strong></a></p>
+${BURGER}
 ${nav}
 </div>` : ""}
 <main>
@@ -627,6 +668,7 @@ ${footer(site)}
 </main>
 </div>
 ${COPY_SCRIPT}
+${MENU_SCRIPT}
 </body>
 </html>
 `;
