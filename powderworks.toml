@@ -70,6 +70,7 @@ name = "Ordnung"
 tagline = "Repository order, made explicit."
 url = "https://ordnung.dev"
 github = "PowderworksCode/ordnung"
+tab-title = "Ordnung by Powderworks"
 
 [site.ordnung.wordmark]
 family = "Fredoka"

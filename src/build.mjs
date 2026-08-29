@@ -566,11 +566,13 @@ function fleet(html, site) {
     const mark = project.logo
       ? `<img class="fleet-mark" src="${escapeHtml(project.logo)}" alt="">`
       : `<span class="fleet-mark"></span>`;
+    // The name is the link to the thing itself, so the only line left to add
+    // is where the code is. Two links under a name that is already a link is
+    // three ways to say the same place.
     const where = project.url || project.repo;
-    const links = [
-      project.url && `<a href="${escapeHtml(project.url)}">Site</a>`,
-      project.repo && `<a href="${escapeHtml(project.repo)}">GitHub</a>`,
-    ].filter(Boolean).join('<span class="dim"> · </span>');
+    const links = project.repo
+      ? `<a href="${escapeHtml(project.repo)}">Code</a>`
+      : "";
     const named = project.font
       ? `<span class="wordmark mark-${project.key}">${escapeHtml(project.name)}</span>`
       : escapeHtml(project.name);

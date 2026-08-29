@@ -73,11 +73,17 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 2.5rem 0; }
 blockquote { color: var(--dim); border-left: 2px solid var(--line);
              margin: 1rem 0; padding-left: 1rem; }
 
-/* A band of the fleet's artwork. One picture, chosen per visit, because ten of
-   them at a megabyte each is more than a page should carry at once. */
-.hero { margin: 1.75rem 0; height: 18rem; border: 1px solid var(--line);
-        border-radius: 6px; background: var(--code-bg) center / cover no-repeat; }
-@media (max-width: 40rem) { .hero { height: 11rem; } }
+/* A site can put a picture behind everything. The page then reads off a panel
+   rather than off the picture, which is the only way the words stay words.
+   Fixed, so the artwork holds still while the column scrolls over it. */
+body.has-hero { background: var(--hero) center / cover fixed no-repeat; }
+body.has-hero .wrap { margin: 2.5rem auto; padding: 2.75rem 2.5rem 3rem;
+                      background: var(--bg); border: 1px solid var(--line);
+                      border-radius: 8px; }
+@media (max-width: 46rem) {
+  body.has-hero { background-attachment: scroll; }
+  body.has-hero .wrap { margin: 0 auto; border: 0; border-radius: 0; }
+}
 
 /* The roster: every other site in the registry, with its own mark. */
 .fleet { list-style: none; padding: 0; margin: 1.5rem 0; }
