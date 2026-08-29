@@ -149,6 +149,11 @@ bun run deploy     # promotes a build to the Worker's route
 to, which is the one to paste into a pull request. Workers Builds settings are
 root directory `example`, build `bun run build`, deploy `bun run deploy`.
 
+`build` runs `bun install` at the repository root before it runs the
+generator, because it runs the generator from `../src` and a build that starts
+in `example` installs only what `example` declares — which is wrangler, and not
+the two packages the generator itself imports.
+
 The demonstration is also the selfcheck: `bun run selfcheck` at the root builds
 the same tree and throws away the output, which is enough to catch a generator
 change that stops producing pages at all.
