@@ -680,19 +680,26 @@ function fleet(html, site) {
     const mark = project.logo
       ? `<img class="fleet-mark" src="${escapeHtml(project.logo)}" alt="">`
       : `<span class="fleet-mark"></span>`;
-    // The name is the link to the thing itself, so the only line left to add
-    // is where the code is. Two links under a name that is already a link is
-    // three ways to say the same place.
-    const where = project.url || project.repo;
-    const links = project.repo
-      ? `<a class="fleet-code" href="${escapeHtml(project.repo)}">Code</a>`
-      : "";
+    // The name is a name, not a link: a list of blue words is a list of
+    // links, and what a reader wants first is which project this is. Where to
+    // go is said in words beside it, one per place, so a reader knows what
+    // they are opening before they open it. A project with only one of the
+    // two gets only that one.
+    const links = [
+      project.url && ["Site", project.url],
+      project.repo && ["Code", project.repo],
+    ]
+      .filter(Boolean)
+      .map(([word, href]) =>
+        `<a class="fleet-link" href="${escapeHtml(href)}">${word}</a>`)
+      .join("");
     const named = project.font
       ? `<span class="wordmark mark-${project.key}">${escapeHtml(project.name)}</span>`
       : escapeHtml(project.name);
-    // The name and where its code is share a line; the tagline gets its own.
+    // The name and where to find the project share a line; the tagline gets
+    // its own.
     return `<li>${mark}<div><span class="fleet-head">` +
-      `<a class="fleet-name" href="${escapeHtml(where)}">${named}</a>${links}</span>` +
+      `<span class="fleet-name">${named}</span>${links}</span>` +
       (project.tagline ? `<span class="dim">${escapeHtml(project.tagline)}</span>` : "") +
       `</div></li>`;
   });

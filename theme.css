@@ -122,7 +122,8 @@ body.has-backdrop .wrap { margin: 2.5rem auto; padding: 2.75rem 2.5rem 3rem;
               object-fit: contain; }
 .fleet-head { display: block; }
 .fleet-name { font-weight: 700; }
-.fleet-code { margin-left: .7rem; font-size: .85em; }
+/* Where to go, beside the name rather than on it. */
+.fleet-link { margin-left: .7rem; font-size: .85em; }
 .fleet .dim { display: block; }
 
 /* The tree of indexes: a section page is a listing of its children. */
