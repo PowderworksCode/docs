@@ -146,8 +146,8 @@ name = "jedem"
 tagline = "Expose a Rust function once; call it from every language, with its shape intact."
 github = "PowderworksCode/jedem"
 
-[site.infact]
+[site.in fact]
 published = false
-name = "infact"
+name = "in fact"
 tagline = "Typed, provenance-carrying facts derived from observations and kept up to date incrementally."
-github = "PowderworksCode/infact"
+github = "PowderworksCode/in fact"
