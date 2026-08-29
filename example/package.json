@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "rm -rf out && node ../src/cli.mjs build content --out out --site example --static public",
+    "build": "cd .. && bun install --frozen-lockfile && cd example && rm -rf out && node ../src/cli.mjs build content --out out --site example --static public",
     "dev": "bun run build && wrangler dev",
     "preview": "bun run build && wrangler versions upload",
     "deploy": "bun run build && wrangler deploy"
