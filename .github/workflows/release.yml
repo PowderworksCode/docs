@@ -68,8 +68,28 @@ jobs:
       - name: An npm that can do this
         run: npm install --global npm@latest
 
+      # npm reports a trusted publish it cannot match as ENEEDAUTH -- "you need
+      # to log in" -- which sends you looking for a missing token instead of a
+      # mismatched publisher (npm/cli#9088). This prints the identity the run
+      # actually presents, so the next failure can be read against the four
+      # fields on the package's settings page rather than guessed at.
+      - name: Who this run says it is
+        run: |
+          echo "workflow ref : ${GITHUB_WORKFLOW_REF}"
+          echo "repository   : ${GITHUB_REPOSITORY}"
+          echo "npm          : $(npm --version)"
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+            echo "::error::No OIDC endpoint in this job: id-token: write is missing, so npm has nothing to authenticate with."
+            exit 1
+          fi
+          echo "OIDC endpoint: present"
+
       # access is in publishConfig, so the manifest says what this publish is
       # rather than the command line saying it somewhere else. Provenance is
       # not asked for either: a trusted publish attests itself.
       - name: Publish
-        run: npm publish
+        run: |
+          npm publish || {
+            echo "::error::npm refused the publish. If that reads ENEEDAUTH, the trusted publisher on @powderworks/docs does not match this run: check organization, repository, workflow filename (release.yml, not release.yaml) and that Environment is empty, against the identity printed above."
+            exit 1
+          }
