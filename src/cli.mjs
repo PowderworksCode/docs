@@ -6,7 +6,7 @@
 // Every directory is a section; every section gets an index page listing its
 // children. The only script emitted is the one that copies a code block.
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { parse } from "smol-toml";
 import { build } from "./build.mjs";
@@ -85,7 +85,24 @@ function registry() {
       font: mark.family ? `"${mark.family}"` : undefined,
       woff2: mark.woff2,
     }));
+  // The fleet, for whichever page shows it: every other site in the registry,
+  // with the mark that ships beside this file.
+  const beside = new URL("./assets/", pathToFileURL(where)).pathname;
+  const projects = Object.entries(site)
+    .filter(([slug, entry]) => slug !== key && entry.name)
+    .map(([slug, entry]) => ({
+      key: slug,
+      name: entry.name,
+      tagline: entry.tagline,
+      url: entry.url,
+      repo: entry.github && `https://github.com/${entry.github}`,
+      logo: markOf(beside, slug),
+    }));
+
   return {
+    fontsDir: new URL("./fonts/", pathToFileURL(where)).pathname,
+    projectsDir: projects.some((project) => project.logo) ? beside : undefined,
+    projects,
     siteUrl: mine.url?.replace(/\/$/, ""),
     name: mine.name,
     description: mine.tagline,
@@ -97,6 +114,13 @@ function registry() {
     copyright: org.copyright,
     wordmarks: [...face(mine.wordmark), ...face(org.wordmark)],
   };
+}
+
+function markOf(beside, slug) {
+  const found = readdirSync(`${beside}${slug}`, { withFileTypes: true })
+    .map((entry) => entry.name)
+    .find((name) => name.replace(/\.[^.]+$/, "") === "logo");
+  return found && `/assets/${slug}/${found}`;
 }
 
 function wordmarks() {

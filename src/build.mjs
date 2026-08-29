@@ -91,6 +91,22 @@ export async function build(contentDir, outDir, settings) {
   await writeNotFound(site, outDir);
   // The shared pictures first, so a site that keeps its own copy overwrites it.
   if (options.assetsDir) await cp(options.assetsDir, outDir, { recursive: true });
+  // The faces this site's names are set in. They ship with the generator so
+  // that a family resemblance does not mean the same file committed four times.
+  for (const mark of marks(options)) {
+    if (!mark.woff2 || !options.fontsDir) continue;
+    const face = path.basename(mark.woff2);
+    await cp(path.join(options.fontsDir, face), path.join(outDir, face))
+      .catch(() => {});
+  }
+  // Marks only, for a page that lists the fleet: a logo is small and a cover
+  // is not, and no site needs another site's cover.
+  for (const project of options.projectsDir ? options.projects ?? [] : []) {
+    if (!project.logo) continue;
+    const to = path.join(outDir, project.logo.replace(/^\//, ""));
+    await mkdir(path.dirname(to), { recursive: true });
+    await cp(path.join(options.projectsDir, project.key, path.basename(project.logo)), to);
+  }
   if (options.staticDir) await cp(options.staticDir, outDir, { recursive: true });
 }
 
@@ -482,8 +498,8 @@ function wordmarked(html, site) {
         ? chunk
         : chunk.replace(pattern, (word) =>
             `<span class="wordmark wordmark-${index.get(flat(word))}">${word}</span>`);
-    if (/^<(code|pre)[\s>]/i.test(chunk)) literal++;
-    else if (/^<\/(code|pre)>/i.test(chunk)) literal = Math.max(0, literal - 1);
+    if (/^<(code|pre|script|style)[\s>]/i.test(chunk)) literal++;
+    else if (/^<\/(code|pre|script|style)>/i.test(chunk)) literal = Math.max(0, literal - 1);
     return chunk;
   });
 }
@@ -511,12 +527,37 @@ function sharing(site, segments, title, description) {
     .join("\n");
 }
 
+// A page that says <!--projects--> gets the fleet, from the same registry the
+// sites build themselves out of. The marker is an HTML comment so a generator
+// that does not know it leaves an empty line rather than a broken page.
+function fleet(html, site) {
+  const marker = "<!--projects-->";
+  if (!html.includes(marker)) return html;
+  const rows = (site.projects ?? []).map((project) => {
+    const mark = project.logo
+      ? `<img class="fleet-mark" src="${escapeHtml(project.logo)}" alt="">`
+      : "";
+    const where = project.url || project.repo;
+    const links = [
+      project.url && `<a href="${escapeHtml(project.url)}">Site</a>`,
+      project.repo && `<a href="${escapeHtml(project.repo)}">GitHub</a>`,
+    ].filter(Boolean).join('<span class="dim"> · </span>');
+    return `<li>${mark}<div><a class="fleet-name" href="${escapeHtml(where)}">` +
+      `${escapeHtml(project.name)}</a>` +
+      (project.tagline ? `<span class="dim">${escapeHtml(project.tagline)}</span>` : "") +
+      (links ? `<span class="dim">${links}</span>` : "") +
+      `</div></li>`;
+  });
+  return html.replace(marker, rows.length ? `<ul class="fleet">${rows.join("")}</ul>` : "");
+}
+
 function pageShell({ site, segments, title: pageTitle, tab, description, trail, body }) {
   const canonical = site.siteUrl
     ? `<link rel="canonical" href="${escapeHtml(site.siteUrl + url(segments))}">`
     : "";
   const social = sharing(site, segments, tab ?? pageTitle, description);
-  const nav = treeNav(site.tree, segments, site);
+  const alone = !site.tree.children.length;
+  const nav = alone ? "" : treeNav(site.tree, segments, site);
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -531,14 +572,14 @@ ${fontLink(site)}
 <link rel="stylesheet" href="${"./".repeat(segments.length)}theme.css">
 </head>
 <body>
-<div class="wrap">
+<div class="wrap${alone ? " solo" : ""}">
 ${nav ? `<div>
 <p class="brand"><a href="/">${segments.length ? "" : mark(site)}<strong>${wordmarked(escapeHtml(site.name), site)}</strong></a></p>
 ${nav}
 </div>` : ""}
 <main>
 ${breadcrumbs(trail, site, segments)}
-${wordmarked(body, site)}
+${fleet(wordmarked(body, site), site)}
 ${segments.length ? pager(site.tree, segments) : ""}
 ${footer(site)}
 </main>

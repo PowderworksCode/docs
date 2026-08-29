@@ -35,6 +35,14 @@ ttf = "https://raw.githubusercontent.com/google/fonts/main/ofl/imfellenglishsc/I
 license = "OFL-1.1"
 specimen = "https://fonts.google.com/specimen/IM+Fell+English+SC"
 
+[site.powderworks]
+name = "Powderworks"
+full-name = "The Powderworks Agentic Code Consortium"
+tagline = "An agentic consortium building for the here and now."
+url = "https://powderworks.dev"
+github = "PowderworksCode"
+tab-title = "The Powderworks Agentic Code Consortium"
+
 [site.straitjacket]
 name = "Straitjacket"
 tagline = "A secret scanner, but for slop."
@@ -49,3 +57,8 @@ woff2 = "/manufacturing-consent-latin.woff2"
 ttf = "https://raw.githubusercontent.com/google/fonts/main/ofl/manufacturingconsent/ManufacturingConsent-Regular.ttf"
 license = "OFL-1.1"
 specimen = "https://fonts.google.com/specimen/Manufacturing+Consent"
+
+[site.entl]
+name = "entl"
+tagline = "A repo's git history and forge activity as streaming data."
+github = "PowderworksCode/entl"

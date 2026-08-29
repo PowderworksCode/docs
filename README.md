@@ -103,6 +103,16 @@ python3 node_modules/powderworks-docs/tools/social-card.py \
 A long name wraps rather than shrinking past the point where it would read
 smaller than its own tagline. Without a logo the text simply has the width.
 
+## A site with nothing to index
+
+A content tree with no pages below the landing gets no sidebar and a single
+centred column. There is no flag: a site with one page has no index to show.
+
+Such a page can say `<!--projects-->` and be handed the fleet — every other
+site in the registry, with its tagline, its links and the mark that ships from
+`assets/<key>/`. The marks are copied into the output; covers are not, because
+no site needs another site's cover.
+
 ## Serving
 
 The output is plain files; anything that serves static assets works. On

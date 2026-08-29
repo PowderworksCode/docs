@@ -73,6 +73,20 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 2.5rem 0; }
 blockquote { color: var(--dim); border-left: 2px solid var(--line);
              margin: 1rem 0; padding-left: 1rem; }
 
+/* A band of the fleet's artwork. One picture, chosen per visit, because ten of
+   them at a megabyte each is more than a page should carry at once. */
+.hero { margin: 1.75rem 0; height: 18rem; border: 1px solid var(--line);
+        border-radius: 6px; background: var(--code-bg) center / cover no-repeat; }
+@media (max-width: 40rem) { .hero { height: 11rem; } }
+
+/* The roster: every other site in the registry, with its own mark. */
+.fleet { list-style: none; padding: 0; margin: 1.5rem 0; }
+.fleet li { display: flex; gap: .9rem; margin: 0 0 1.4rem; }
+.fleet-mark { flex: 0 0 auto; width: 2.3rem; height: 2.3rem; margin-top: .2rem;
+              object-fit: contain; }
+.fleet-name { font-weight: 700; }
+.fleet .dim { display: block; }
+
 /* The tree of indexes: a section page is a listing of its children. */
 ul.index { list-style: none; padding: 0; margin: 1.5rem 0; }
 ul.index li { margin: 0 0 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
