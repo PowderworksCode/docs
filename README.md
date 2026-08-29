@@ -74,9 +74,14 @@ checkout is the point: `files` is an easy list to leave a directory out of, and
 a site that cannot find `powderworks.toml` fails in the consumer's repository
 rather than in this one.
 
-It needs one secret, `NPM_TOKEN`. The publish is signed with npm provenance, so
-a reader can tie the tarball on the registry back to the commit and the run
-that made it.
+It needs no secret. npm trusts this repository's `release.yml` by name and
+issues the credential to the run itself, so there is no publish token to leak,
+rotate, or hand a one-time password to. The publish is signed with provenance
+either way, so a reader can tie the tarball on the registry back to the commit
+and the run that made it.
+
+Configured on the package's npm settings page as a trusted publisher:
+`PowderworksCode`, `docs`, `release.yml`.
 
 ## Usage
 
