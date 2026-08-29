@@ -25,6 +25,12 @@ jobs:
     name: publish to npm
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Named because npm's trusted publisher for this package names it: the
+    # OIDC token this job presents carries the environment as a claim, and a
+    # publisher configured with one will not match a job without one. It also
+    # buys the gate -- add a required reviewer to the environment and a tag
+    # push waits for a person before it reaches the registry.
+    environment: npm
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -77,6 +83,7 @@ jobs:
         run: |
           echo "workflow ref : ${GITHUB_WORKFLOW_REF}"
           echo "repository   : ${GITHUB_REPOSITORY}"
+          echo "environment  : ${GITHUB_JOB_ENVIRONMENT:-npm}"
           echo "npm          : $(npm --version)"
           if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
             echo "::error::No OIDC endpoint in this job: id-token: write is missing, so npm has nothing to authenticate with."
