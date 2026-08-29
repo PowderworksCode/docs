@@ -109,6 +109,7 @@ function registry() {
     name: mine.name,
     fullName: mine["full-name"],
     description: mine.tagline,
+    lede: mine.lede,
     tabTitle: mine["tab-title"],
     assetsDir: existsSync(pictures) ? pictures : undefined,
     github: mine.github,

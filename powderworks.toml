@@ -44,6 +44,9 @@ published = true
 name = "Powderworks"
 full-name = "The Powderworks Agentic Coding Consortium"
 tagline = "An agentic consortium building for the here and now."
+# The card and the meta description still want a tagline; the page does not
+# want it a second time under a heading that already says it.
+lede = false
 url = "https://powderworks.dev"
 github = "PowderworksCode"
 tab-title = "The Powderworks Agentic Coding Consortium"

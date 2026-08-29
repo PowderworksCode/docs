@@ -90,7 +90,9 @@ body.has-hero .wrap { margin: 2.5rem auto; padding: 2.75rem 2.5rem 3rem;
 .fleet li { display: flex; gap: .9rem; margin: 0 0 1.4rem; }
 .fleet-mark { flex: 0 0 auto; width: 2.3rem; height: 2.3rem; margin-top: .2rem;
               object-fit: contain; }
+.fleet-head { display: block; }
 .fleet-name { font-weight: 700; }
+.fleet-code { margin-left: .7rem; font-size: .85em; }
 .fleet .dim { display: block; }
 
 /* The tree of indexes: a section page is a listing of its children. */

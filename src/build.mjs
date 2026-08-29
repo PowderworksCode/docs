@@ -210,6 +210,7 @@ function landing(section, site) {
     title: section.root?.frontmatter.title ?? site.fullName ?? site.name,
     tab: tab(section) ?? site.tabTitle,
     description: description(section) || site.description || "",
+    lede: site.lede !== false,
   };
 }
 
@@ -223,7 +224,7 @@ async function emitSection(section, trail, site, outDir) {
     description: description(section),
   };
 
-  const lede = root && said.description
+  const lede = root && said.lede && said.description
     ? `<p class="lede">${escapeHtml(said.description)}</p>\n`
     : "";
   const body = lede + (section.root ? renderMarkdown(section.root.body) : "");
@@ -571,15 +572,15 @@ function fleet(html, site) {
     // three ways to say the same place.
     const where = project.url || project.repo;
     const links = project.repo
-      ? `<a href="${escapeHtml(project.repo)}">Code</a>`
+      ? `<a class="fleet-code" href="${escapeHtml(project.repo)}">Code</a>`
       : "";
     const named = project.font
       ? `<span class="wordmark mark-${project.key}">${escapeHtml(project.name)}</span>`
       : escapeHtml(project.name);
-    return `<li>${mark}<div><a class="fleet-name" href="${escapeHtml(where)}">` +
-      `${named}</a>` +
+    // The name and where its code is share a line; the tagline gets its own.
+    return `<li>${mark}<div><span class="fleet-head">` +
+      `<a class="fleet-name" href="${escapeHtml(where)}">${named}</a>${links}</span>` +
       (project.tagline ? `<span class="dim">${escapeHtml(project.tagline)}</span>` : "") +
-      (links ? `<span class="dim">${links}</span>` : "") +
       `</div></li>`;
   });
   return html.replace(MARKER, rows.length ? `<ul class="fleet">${rows.join("")}</ul>` : "");
