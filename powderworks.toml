@@ -54,7 +54,12 @@ tab-title = "The Powderworks Agentic Coding Consortium"
 [site.straitjacket]
 published = true
 name = "Straitjacket"
-tagline = "A secret scanner, but for slop."
+tagline = "Restrain your agents from shipping slop."
+hero = true
+cover-alt = "Engraving of a patient restrained in a strait-waistcoat"
+cover-credit = """\
+<a href="https://wellcomecollection.org/works/dh2xhuph">Wellcome Collection</a>, \
+<a href="https://creativecommons.org/publicdomain/mark/1.0/">Public Domain Mark</a>."""
 url = "https://straitjacket.dev"
 github = "PowderworksCode/straitjacket"
 tab-title = "Straitjacket by Powderworks"

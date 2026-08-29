@@ -73,6 +73,7 @@ async function conventional(options) {
   };
   return {
     ...options,
+    cover: options.cover ?? named("cover"),
     logo: options.logo ?? named("favicon") ?? named("logo"),
     touchIcon: named("apple-touch-icon"),
     social: options.social ?? named("social"),
@@ -227,7 +228,10 @@ async function emitSection(section, trail, site, outDir) {
   const lede = root && said.lede && said.description
     ? `<p class="lede">${escapeHtml(said.description)}</p>\n`
     : "";
-  const body = lede + (section.root ? renderMarkdown(section.root.body) : "");
+  const hero = root && site.hero && site.cover
+    ? { image: site.cover, alt: site.coverAlt, credit: site.coverCredit }
+    : undefined;
+  const body = section.root ? renderMarkdown(section.root.body) : "";
   const listing = section.slug && section.children.length
     ? `<ul class="index">\n${section.children.map((child) =>
         `<li><a href="${child.slug}/">${escapeHtml(title(child))}</a>` +
@@ -244,6 +248,8 @@ async function emitSection(section, trail, site, outDir) {
     title: said.title,
     tab: said.tab,
     description: said.description,
+    lede,
+    hero,
     body: `${body}${listing}`,
     trail: here.slice(0, -1),
     site,
@@ -626,8 +632,36 @@ ${COPY_SCRIPT}
 `;
 }
 
-async function writePage({ outDir, title: pageTitle, ...context }) {
-  context.body = `<h1>${escapeHtml(pageTitle)}</h1>\n` + context.body;
+// The opening of a landing page stands beside the picture: the name, the line
+// under it, and whatever the page says before it starts a section. Where a
+// page has no sections it says so with <!--/hero-->, because the alternative
+// reading -- no heading, so all of it -- would put the whole page in a column
+// half the width of the one it was written for.
+const HERO_END = "<!--/hero-->";
+
+function heroEnd(body) {
+  const marked = body.indexOf(HERO_END);
+  if (marked !== -1) return marked;
+  const heading = body.search(/<h[23][\s>]/);
+  return heading;
+}
+
+function masthead(pageTitle, lede, hero, opening) {
+  const words = `<h1>${escapeHtml(pageTitle)}</h1>\n${lede}${opening}`;
+  if (!hero) return words;
+  return `<div class="hero">\n<div class="hero-words">\n${words}</div>\n` +
+    `<figure class="hero-art"><img src="${escapeHtml(hero.image)}" ` +
+    `alt="${escapeHtml(hero.alt ?? "")}">` +
+    (hero.credit ? `<figcaption>${hero.credit}</figcaption>` : "") +
+    `</figure>\n</div>\n`;
+}
+
+async function writePage({ outDir, title: pageTitle, lede = "", hero, ...context }) {
+  const ends = hero ? heroEnd(context.body) : -1;
+  const opening = ends === -1 ? "" : context.body.slice(0, ends);
+  const sections = (ends === -1 ? context.body : context.body.slice(ends))
+    .replace(HERO_END, "");
+  context.body = masthead(pageTitle, lede, hero, opening) + sections;
   const target = path.join(outDir, ...context.segments, "index.html");
   await mkdir(path.dirname(target), { recursive: true });
   await writeFile(target, pageShell({ ...context, title: pageTitle }));
