@@ -16,7 +16,7 @@ and gets the rest.
 
 ```sh
 powderworks-docs build content --out out --site straitjacket --static public
-python3 node_modules/powderworks-docs/tools/social-card.py --site straitjacket
+python3 node_modules/@powderworks/docs/tools/social-card.py --site straitjacket
 ```
 
 Anything passed on the command line still wins, and `--config` points at a
@@ -47,8 +47,11 @@ never match one redrawn on a runner.
 ## Installing it
 
 ```sh
-bun add powderworks-docs      # or npm install powderworks-docs
+bun add @powderworks/docs     # or npm install @powderworks/docs
 ```
+
+The package is `@powderworks/docs`; the command it installs is
+`powderworks-docs`, which is what a site's build script calls.
 
 The package carries what the generator reads at build time: `powderworks.toml`,
 the faces in `fonts/`, and the marks and covers in `assets/`. A site that names
@@ -143,7 +146,7 @@ logo down the right. Needs Pillow, and a `ttf` or `otf` rather than the `woff2`
 the site serves, because Pillow cannot read `woff2`. A URL is fetched once.
 
 ```sh
-python3 node_modules/powderworks-docs/tools/social-card.py \
+python3 node_modules/@powderworks/docs/tools/social-card.py \
   --name Straitjacket \
   --tagline "A secret scanner, but for slop." \
   --url straitjacket.dev \

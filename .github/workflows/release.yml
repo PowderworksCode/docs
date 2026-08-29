@@ -35,7 +35,8 @@ jobs:
           echo "version=${manifest}" >> "$GITHUB_OUTPUT"
 
       - name: What ships
-        run: npm pack --pack-destination /tmp
+        id: pack
+        run: echo "tarball=$(npm pack --pack-destination /tmp | tail -1)" >> "$GITHUB_OUTPUT"
 
       # A site names itself out of powderworks.toml and sets that name in a
       # face out of fonts/, and both are in the tarball only because `files`
@@ -43,11 +44,13 @@ jobs:
       # the list is complete.
       - name: A site builds from what ships
         env:
-          VERSION: ${{ steps.version.outputs.version }}
+          # npm names a scoped tarball after the scope and the name, so the
+          # file is read back from pack rather than spelled out here.
+          TARBALL: ${{ steps.pack.outputs.tarball }}
         run: |
           mkdir /tmp/consumer && cd /tmp/consumer
           npm init -y > /dev/null
-          npm install --no-audit --no-fund "/tmp/powderworks-docs-${VERSION}.tgz"
+          npm install --no-audit --no-fund "/tmp/${TARBALL}"
           ./node_modules/.bin/powderworks-docs build \
             "${GITHUB_WORKSPACE}/example/content" --out out --site example \
             --static "${GITHUB_WORKSPACE}/example/public"
