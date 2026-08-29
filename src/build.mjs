@@ -9,7 +9,40 @@
 
 import { cp, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import hljs from "highlight.js/lib/core";
 import { marked } from "marked";
+
+// Only the languages the sites use. Registering by hand rather than importing
+// the bundle keeps the build honest about what it can colour: a fence naming
+// something absent is left plain rather than guessed at, which is the right
+// failure -- a wrong highlight reads as a wrong program.
+const LANGUAGES = {
+  bash: () => import("highlight.js/lib/languages/bash"),
+  css: () => import("highlight.js/lib/languages/css"),
+  javascript: () => import("highlight.js/lib/languages/javascript"),
+  json: () => import("highlight.js/lib/languages/json"),
+  python: () => import("highlight.js/lib/languages/python"),
+  rust: () => import("highlight.js/lib/languages/rust"),
+  scheme: () => import("highlight.js/lib/languages/scheme"),
+  toml: () => import("highlight.js/lib/languages/ini"),
+  typescript: () => import("highlight.js/lib/languages/typescript"),
+  xml: () => import("highlight.js/lib/languages/xml"),
+  yaml: () => import("highlight.js/lib/languages/yaml"),
+};
+
+// What a fence may be written as, mapped to what is registered above.
+const ALIASES = {
+  sh: "bash", shell: "bash", console: "bash", zsh: "bash",
+  js: "javascript", mjs: "javascript", ts: "typescript", tsx: "typescript",
+  py: "python", rs: "rust", html: "xml", yml: "yaml", query: "scheme",
+};
+
+for (const [name, load] of Object.entries(LANGUAGES)) {
+  hljs.registerLanguage(name, (await load()).default);
+}
+for (const [alias, target] of Object.entries(ALIASES)) {
+  hljs.registerAliases(alias, { languageName: target });
+}
 
 const MARKDOWN = /\.(?:md|markdown)$/;
 
@@ -18,6 +51,19 @@ const MARKDOWN = /\.(?:md|markdown)$/;
 // the link takes focus, and it holds its space either way, so nothing shifts.
 marked.use({
   renderer: {
+    // Highlighting is done here, at build time, so nothing extra runs in the
+    // browser -- the only script these pages carry is still the one that
+    // copies a code block. An unknown or absent language is escaped and left
+    // alone rather than auto-detected, because a guess that lands on the
+    // wrong grammar colours a program as though it were another one.
+    code(token) {
+      const lang = (token.lang ?? "").trim().split(/\s+/)[0].toLowerCase();
+      const body = hljs.getLanguage(lang)
+        ? hljs.highlight(token.text, { language: lang, ignoreIllegals: true }).value
+        : escapeHtml(token.text);
+      const attr = lang ? ` class="language-${escapeHtml(lang)}"` : "";
+      return `<pre><code${attr}>${body}</code></pre>\n`;
+    },
     heading(token) {
       const text = this.parser.parseInline(token.tokens);
       const id = headingId(text);
