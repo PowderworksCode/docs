@@ -7,6 +7,38 @@ children — title and one-line description from frontmatter. Breadcrumbs come
 from the path you already have. The whole aesthetic is [cratebank.io](https://cratebank.io):
 system serif, six color tokens, automatic light and dark, one readable column.
 
+## One place for the names
+
+`powderworks.toml` ships with the generator and holds what the sites share and
+what each one varies: the workshop's name and face under `[org]`, a site's own
+name, tagline, domain, logo and face under `[site.<key>]`. A site names itself
+and gets the rest.
+
+```sh
+powderworks-docs build content --out out --site straitjacket --static public
+python3 node_modules/powderworks-docs/tools/social-card.py --site straitjacket
+```
+
+Anything passed on the command line still wins, and `--config` points at a
+different file. Adding a site means an entry here, which is the trade: one
+place to change a name, one repository to open a pull request against.
+
+Pictures are not in the file. Every site keeps the same three in its static
+directory, found by name rather than recorded as a path into another
+repository:
+
+| file | what it is |
+| --- | --- |
+| `logo.*` | the mark, beside the site name and in the tab |
+| `cover.*` | the picture the landing opens with, and the card carries |
+| `social.png` | the card itself |
+
+`--check` compares the committed card against what the config now says. It
+compares the inputs rather than the pixels — the words, the picture, the face
+and this script, hashed into the PNG when it is drawn — because freetype hints
+differently from one version to the next and a card drawn on a laptop would
+never match one redrawn on a runner.
+
 ## Usage
 
 ```sh
@@ -45,6 +77,26 @@ HTML, so agents can fetch either form without content negotiation.
 
 Emitted alongside the pages: `sitemap.xml`, `llms.txt`, `404.html`, and
 `theme.css` wherever a page references it.
+
+## The card a link shows
+
+`--social` names the image; `tools/social-card.py` draws one to the same bones
+for every site — the name in the site's own face, its tagline, its domain, its
+logo down the right. Needs Pillow, and a `ttf` or `otf` rather than the `woff2`
+the site serves, because Pillow cannot read `woff2`. A URL is fetched once.
+
+```sh
+python3 node_modules/powderworks-docs/tools/social-card.py \
+  --name Straitjacket \
+  --tagline "A secret scanner, but for slop." \
+  --url straitjacket.dev \
+  --logo public/engraving.jpg \
+  --font https://raw.githubusercontent.com/google/fonts/main/ofl/x/X.ttf \
+  --out public/social.png
+```
+
+A long name wraps rather than shrinking past the point where it would read
+smaller than its own tagline. Without a logo the text simply has the width.
 
 ## Serving
 

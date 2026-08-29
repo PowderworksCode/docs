@@ -6,6 +6,8 @@
 // Every directory is a section; every section gets an index page listing its
 // children. The only script emitted is the one that copies a code block.
 
+import { readFileSync } from "node:fs";
+import { parse } from "smol-toml";
 import { build } from "./build.mjs";
 
 const args = process.argv.slice(2);
@@ -15,11 +17,14 @@ function usage() {
   console.log(`Usage: powderworks-docs build <contentDir> --out <outDir> [options]
 
 Options:
+  --site <key>         Take the settings below from powderworks.toml
+  --config <path>      Read that file from somewhere else
   --site-url <url>     Canonical origin, for <link rel=canonical> and sitemap
   --name <name>        Site name (default: first heading or "docs")
   --description <text> Meta description for the root page
   --github <owner/repo|url>  Footer repository link
   --logo <path>        Small mark beside the site name and as favicon
+  --social <path>      Card image for links to this site, shown when unfurled
   --static <dir>       Directory copied verbatim into the output
   --license <text>     Footer license line
   --copyright <name>   Footer copyright, as (c) <year> <name>, replacing the above
@@ -59,6 +64,35 @@ if (!contentDir || !outDir) {
   process.exit(2);
 }
 
+// One registry, shipped with the generator, so a name or a face is written
+// once rather than in every repository that mentions it. Anything given on
+// the command line still wins: the file is where a site starts, not a cage.
+function registry() {
+  const key = option("site");
+  const where = option("config") ??
+    new URL("../powderworks.toml", import.meta.url).pathname;
+  if (!key) return {};
+  const { org = {}, site = {} } = parse(readFileSync(where, "utf8"));
+  const mine = site[key];
+  if (!mine) throw new Error(`no [site.${key}] in ${where}`);
+  const face = (mark) =>
+    (mark?.words ?? []).map((text) => ({
+      text,
+      font: mark.family ? `"${mark.family}"` : undefined,
+      woff2: mark.woff2,
+    }));
+  return {
+    siteUrl: mine.url?.replace(/\/$/, ""),
+    name: mine.name,
+    description: mine.tagline,
+    github: mine.github,
+    logo: mine.logo,
+    social: mine.social,
+    copyright: org.copyright,
+    wordmarks: [...face(mine.wordmark), ...face(org.wordmark)],
+  };
+}
+
 function wordmarks() {
   const fonts = every("wordmark-font");
   const files = every("wordmark-woff2");
@@ -69,17 +103,27 @@ function wordmarks() {
   }));
 }
 
+const shared = registry();
+const given = {
+  siteUrl: option("site-url")?.replace(/\/$/, ""),
+  name: option("name"),
+  description: option("description"),
+  github: option("github"),
+  social: option("social"),
+  staticDir: option("static"),
+  license: option("license"),
+  copyright: option("copyright"),
+  wordmarks: wordmarks(),
+  logo: option("logo"),
+};
+
 try {
   await build(contentDir, outDir, {
-    siteUrl: option("site-url")?.replace(/\/$/, ""),
-    name: option("name"),
-    description: option("description"),
-    github: option("github"),
-    staticDir: option("static"),
-    license: option("license"),
-    copyright: option("copyright"),
-    wordmarks: wordmarks(),
-    logo: option("logo"),
+    ...shared,
+    ...Object.fromEntries(
+      Object.entries(given).filter(([, value]) =>
+        Array.isArray(value) ? value.length : value !== undefined),
+    ),
   });
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);

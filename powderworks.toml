@@ -1,0 +1,52 @@
+# Every Powderworks site reads this file, which ships with the generator.
+#
+# The [org] half is what the sites have in common, and it is the reason they
+# look like relatives rather than strangers: one name for the workshop, one
+# face for it, one person to credit. The [site] half is what each one varies.
+#
+# A site names itself at build time and gets the rest from here:
+#
+#     powderworks-docs build content --out out --site straitjacket
+#
+# Repos reference each other often enough that the alternative is the same
+# string written into four package.json files and wrong in one of them.
+#
+# Pictures are not in here. Every site keeps the same three in its static
+# directory and they are found by name, because a path into another repository
+# is a thing to get wrong and a filename is a thing to follow:
+#
+#     logo.*     the mark, beside the site name and in the tab
+#     cover.*    the picture the landing opens with, and the card carries
+#     social.png the card itself, drawn by tools/social-card.py
+
+[org]
+name = "Powderworks"
+full-name = "The Powderworks Agentic Code Consortium"
+url = "https://powderworks.dev"
+github = "PowderworksCode"
+copyright = "Zack Maril"
+newsletter = "https://newsletter.powderworks.dev/embed"
+
+# Set wherever the workshop is named, on any of its sites.
+[org.wordmark]
+family = "IM Fell English SC"
+words = ["The Powderworks Agentic Code Consortium", "Powderworks"]
+woff2 = "/im-fell-english-sc-latin.woff2"
+ttf = "https://raw.githubusercontent.com/google/fonts/main/ofl/imfellenglishsc/IMFeENsc28P.ttf"
+license = "OFL-1.1"
+specimen = "https://fonts.google.com/specimen/IM+Fell+English+SC"
+
+[site.straitjacket]
+name = "Straitjacket"
+tagline = "A secret scanner, but for slop."
+url = "https://straitjacket.dev"
+github = "PowderworksCode/straitjacket"
+tab-title = "Straitjacket by Powderworks"
+
+[site.straitjacket.wordmark]
+family = "Manufacturing Consent"
+words = ["Straitjacket"]
+woff2 = "/manufacturing-consent-latin.woff2"
+ttf = "https://raw.githubusercontent.com/google/fonts/main/ofl/manufacturingconsent/ManufacturingConsent-Regular.ttf"
+license = "OFL-1.1"
+specimen = "https://fonts.google.com/specimen/Manufacturing+Consent"
