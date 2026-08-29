@@ -185,12 +185,15 @@ const sentence = (slug) =>
 
 // --- emitting ----------------------------------------------------------------
 
-// The landing is the site, so it says what the site says: its name, its
-// tagline, and the tab it asked for, all from the one place those are written.
+// The landing is the site, so it says what the site says: its name at length
+// if it has a longer one, its tagline, and the tab it asked for, all from the
+// one place those are written. The short name still does the small jobs -- the
+// index, the suffix on every other tab, the card -- because a masthead and a
+// label are not the same word.
 // A root index.md that states them anyway still wins, but it no longer has to.
 function landing(section, site) {
   return {
-    title: section.root?.frontmatter.title ?? site.name,
+    title: section.root?.frontmatter.title ?? site.fullName ?? site.name,
     tab: tab(section) ?? site.tabTitle,
     description: description(section) || site.description || "",
   };

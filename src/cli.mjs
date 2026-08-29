@@ -105,6 +105,7 @@ function registry() {
     projects,
     siteUrl: mine.url?.replace(/\/$/, ""),
     name: mine.name,
+    fullName: mine["full-name"],
     description: mine.tagline,
     tabTitle: mine["tab-title"],
     assetsDir: existsSync(pictures) ? pictures : undefined,
