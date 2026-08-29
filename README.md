@@ -23,6 +23,22 @@ Anything passed on the command line still wins, and `--config` points at a
 different file. Adding a site means an entry here, which is the trade: one
 place to change a name, one repository to open a pull request against.
 
+Pictures are not in the file. Every site keeps the same three in its static
+directory, found by name rather than recorded as a path into another
+repository:
+
+| file | what it is |
+| --- | --- |
+| `logo.*` | the mark, beside the site name and in the tab |
+| `cover.*` | the picture the landing opens with, and the card carries |
+| `social.png` | the card itself |
+
+`--check` compares the committed card against what the config now says. It
+compares the inputs rather than the pixels — the words, the picture, the face
+and this script, hashed into the PNG when it is drawn — because freetype hints
+differently from one version to the next and a card drawn on a laptop would
+never match one redrawn on a runner.
+
 ## Usage
 
 ```sh

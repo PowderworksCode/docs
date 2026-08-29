@@ -52,7 +52,25 @@ function renderMarkdown(text) {
   return marked.parse(text);
 }
 
-export async function build(contentDir, outDir, options) {
+// The three pictures every site has are found by name in its static directory
+// rather than recorded as paths somewhere else. A path into another repository
+// is a thing to get wrong; a filename is a thing to follow.
+async function conventional(options) {
+  if (!options.staticDir) return options;
+  const files = await readdir(options.staticDir).catch(() => []);
+  const named = (stem) => {
+    const found = files.find((name) => name.replace(/\.[^.]+$/, "") === stem);
+    return found && `/${found}`;
+  };
+  return {
+    ...options,
+    logo: options.logo ?? named("logo"),
+    social: options.social ?? named("social"),
+  };
+}
+
+export async function build(contentDir, outDir, settings) {
+  const options = await conventional(settings);
   const tree = await readTree(path.resolve(contentDir));
   const site = { ...options, name: options.name ?? title(tree) ?? "docs", tree };
   const theme = await readFile(new URL("../theme.css", import.meta.url), "utf8") +

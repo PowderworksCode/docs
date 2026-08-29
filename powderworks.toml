@@ -10,14 +10,20 @@
 #
 # Repos reference each other often enough that the alternative is the same
 # string written into four package.json files and wrong in one of them.
+#
+# Pictures are not in here. Every site keeps the same three in its static
+# directory and they are found by name, because a path into another repository
+# is a thing to get wrong and a filename is a thing to follow:
+#
+#     logo.*     the mark, beside the site name and in the tab
+#     cover.*    the picture the landing opens with, and the card carries
+#     social.png the card itself, drawn by tools/social-card.py
 
 [org]
 name = "Powderworks"
 full-name = "The Powderworks Agentic Code Consortium"
 url = "https://powderworks.dev"
 github = "PowderworksCode"
-maintainer = "Zack"
-maintainer-url = "https://github.com/zmaril"
 copyright = "Zack Maril"
 newsletter = "https://newsletter.powderworks.dev/embed"
 
@@ -36,9 +42,6 @@ tagline = "A secret scanner, but for slop."
 url = "https://straitjacket.dev"
 github = "PowderworksCode/straitjacket"
 tab-title = "Straitjacket by Powderworks"
-logo = "/strait-face.png"
-cover = "/strait-waistcoat.jpg"
-social = "/social.png"
 
 [site.straitjacket.wordmark]
 family = "Manufacturing Consent"

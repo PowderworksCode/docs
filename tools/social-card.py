@@ -18,12 +18,14 @@ Pillow cannot read it. A URL is downloaded to a temporary file.
 """
 import argparse
 import functools
+import hashlib
 import tempfile
 import tomllib
 import urllib.request
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
+from PIL.PngImagePlugin import PngInfo
 
 WIDTH, HEIGHT = 1200, 630
 MARGIN = 72
@@ -125,15 +127,58 @@ def from_registry(key, where, root):
     mine = config.get("site", {}).get(key)
     if mine is None:
         raise SystemExit(f"no [site.{key}] in {where}")
-    web = lambda path: str(Path(root) / path.lstrip("/")) if path else None
     return {
         "name": mine.get("name"),
         "tagline": mine.get("tagline", ""),
         "url": (mine.get("url") or "").removeprefix("https://").removeprefix("http://").rstrip("/"),
-        "logo": web(mine.get("cover")),
+        "logo": named(root, "cover"),
         "font": mine.get("wordmark", {}).get("ttf"),
-        "out": web(mine.get("social")),
+        "out": str(Path(root) / "social.png"),
     }
+
+
+def named(root, stem):
+    """Pictures are found by name in the site's static directory, not recorded
+    as paths in a file that lives in another repository."""
+    for found in sorted(Path(root).glob(f"{stem}.*")):
+        return str(found)
+    return None
+
+
+STAMP = "powderworks-card"
+
+
+def fingerprint(said):
+    """What the card is a function of: the words, the picture, the face, and
+    the code that arranges them.
+
+    Comparing the drawings instead would mean comparing rendering, and freetype
+    hints differently from one version to the next, so a card drawn on a laptop
+    and checked on a runner never matches to the byte. Comparing what went in
+    has no such problem, and it answers the question actually being asked --
+    whether the committed card is still the one this config describes.
+    """
+    digest = hashlib.sha256()
+    for word in (said.name, said.tagline, said.url):
+        digest.update(f"{word or ''}\x00".encode())
+    for path in (said.logo, local(said.font), __file__):
+        if path:
+            digest.update(Path(path).read_bytes())
+    return digest.hexdigest()[:16]
+
+
+def compare(said, stamp):
+    where = Path(said.out)
+    if not where.exists():
+        raise SystemExit(f"{said.out} is not committed; run without --check first")
+    was = Image.open(where).text.get(STAMP)
+    if was == stamp:
+        print(f"{said.out}  matches the config  [{stamp}]")
+        return
+    raise SystemExit(
+        f"{said.out} was drawn from {was or 'an unrecorded input'}, "
+        f"the config now says {stamp}: run the social script and commit it"
+    )
 
 
 def main():
@@ -147,6 +192,11 @@ def main():
     parse.add_argument("--logo")
     parse.add_argument("--font", help="ttf or otf, path or URL")
     parse.add_argument("--out")
+    parse.add_argument(
+        "--check",
+        action="store_true",
+        help="compare with the committed card rather than overwriting it",
+    )
     said = parse.parse_args()
 
     if said.site:
@@ -188,8 +238,14 @@ def main():
         draw.line([MARGIN, cursor, MARGIN + min(300, room), cursor], fill=RULE, width=1)
         draw.text((MARGIN, cursor + 20), said.url, font=domain, fill=QUIET)
 
+    stamp = fingerprint(said)
+    if said.check:
+        return compare(said, stamp)
+
+    marked = PngInfo()
+    marked.add_text(STAMP, stamp)
     Path(said.out).parent.mkdir(parents=True, exist_ok=True)
-    card.save(said.out, optimize=True)
+    card.save(said.out, optimize=True, pnginfo=marked)
     print(f"{said.out}  {WIDTH}x{HEIGHT}  {Path(said.out).stat().st_size // 1024}KB")
 
 
