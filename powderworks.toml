@@ -11,13 +11,12 @@
 # Repos reference each other often enough that the alternative is the same
 # string written into four package.json files and wrong in one of them.
 #
-# Pictures are not in here. Every site keeps the same three in its static
-# directory and they are found by name, because a path into another repository
-# is a thing to get wrong and a filename is a thing to follow:
+# Pictures are in assets/<key>/ beside this file rather than in the sites, so
+# the workshop's own pages can show a project's mark without cloning it. They
+# are found by name, and a site keeping its own copy overwrites the shared one:
 #
-#     logo.*     the mark, beside the site name and in the tab
-#     cover.*    the picture the landing opens with, and the card carries
-#     social.png the card itself, drawn by tools/social-card.py
+#     assets/<key>/logo.*   the mark, beside the site name and in the tab
+#     assets/<key>/cover.*  the landing picture, which the card carries too
 
 [org]
 name = "Powderworks"

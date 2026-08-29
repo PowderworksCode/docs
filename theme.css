@@ -56,7 +56,9 @@ h2 { font-size: 1.15rem; letter-spacing: -.01em; margin: 2.25rem 0 .6rem;
           color: var(--dim); opacity: 0; }
 h2:hover .anchor, h3:hover .anchor, h4:hover .anchor,
 h5:hover .anchor, h6:hover .anchor, .anchor:focus { opacity: 1; }
-article > p:first-child { color: var(--dim); font-size: 1.05rem; }
+/* The line under the landing's name, which the site states once and the page
+   is handed rather than repeating. */
+.lede { font-weight: 700; font-size: 1.05rem; margin: 0 0 1rem; }
 p, li { margin: .6rem 0; }
 
 a { color: var(--accent); }

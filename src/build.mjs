@@ -56,8 +56,10 @@ function renderMarkdown(text) {
 // rather than recorded as paths somewhere else. A path into another repository
 // is a thing to get wrong; a filename is a thing to follow.
 async function conventional(options) {
-  if (!options.staticDir) return options;
-  const files = await readdir(options.staticDir).catch(() => []);
+  const where = [options.staticDir, options.assetsDir].filter(Boolean);
+  if (!where.length) return options;
+  const files = (await Promise.all(where.map((dir) => readdir(dir).catch(() => []))))
+    .flat();
   const named = (stem) => {
     const found = files.find((name) => name.replace(/\.[^.]+$/, "") === stem);
     return found && `/${found}`;
@@ -87,6 +89,8 @@ export async function build(contentDir, outDir, settings) {
   await writeSitemap(tree, site, outDir);
   await writeLlmsTxt(tree, site, outDir);
   await writeNotFound(site, outDir);
+  // The shared pictures first, so a site that keeps its own copy overwrites it.
+  if (options.assetsDir) await cp(options.assetsDir, outDir, { recursive: true });
   if (options.staticDir) await cp(options.staticDir, outDir, { recursive: true });
 }
 
@@ -165,11 +169,31 @@ const sentence = (slug) =>
 
 // --- emitting ----------------------------------------------------------------
 
+// The landing is the site, so it says what the site says: its name, its
+// tagline, and the tab it asked for, all from the one place those are written.
+// A root index.md that states them anyway still wins, but it no longer has to.
+function landing(section, site) {
+  return {
+    title: section.root?.frontmatter.title ?? site.name,
+    tab: tab(section) ?? site.tabTitle,
+    description: description(section) || site.description || "",
+  };
+}
+
 async function emitSection(section, trail, site, outDir) {
   const here = section.slug ? [...trail, section] : trail;
   const segments = here.map((n) => n.slug);
+  const root = !section.slug;
+  const said = root ? landing(section, site) : {
+    title: title(section),
+    tab: tab(section),
+    description: description(section),
+  };
 
-  const body = section.root ? renderMarkdown(section.root.body) : "";
+  const lede = root && said.description
+    ? `<p class="lede">${escapeHtml(said.description)}</p>\n`
+    : "";
+  const body = lede + (section.root ? renderMarkdown(section.root.body) : "");
   const listing = section.slug && section.children.length
     ? `<ul class="index">\n${section.children.map((child) =>
         `<li><a href="${child.slug}/">${escapeHtml(title(child))}</a>` +
@@ -183,9 +207,9 @@ async function emitSection(section, trail, site, outDir) {
   await writePage({
     outDir,
     segments,
-    title: title(section),
-    tab: tab(section),
-    description: description(section),
+    title: said.title,
+    tab: said.tab,
+    description: said.description,
     body: `${body}${listing}`,
     trail: here.slice(0, -1),
     site,
