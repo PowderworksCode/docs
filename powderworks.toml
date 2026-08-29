@@ -84,9 +84,7 @@ license = "OFL-1.1"
 specimen = "https://fonts.google.com/specimen/Fredoka"
 
 [site.treebank]
-# Not published yet: the site is built and its packs are in R2, but the
-# domain is not yet routed to the Worker. One word, once it serves.
-published = false
+published = true
 name = "Treebank"
 tagline = "A growing collection of well-tested Tree-sitter grammars"
 url = "https://treebank.dev"
