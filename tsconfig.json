@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  // The compiler options are fleet policy and live in tsconfig.base.json,
+  // which conf writes here. Only what the generator itself needs belongs
+  // below.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    // The generator ships as ESM JavaScript, not TypeScript, so the checker
+    // has to be told to read it at all.
+    "allowJs": true,
+    "checkJs": true,
+    // `strict` over unannotated JavaScript reports the absence of JSDoc
+    // rather than a mistake -- 124 of the 129 findings were "parameter
+    // implicitly has an any type". Off, the checker still catches what it is
+    // here for: a misspelled name, a property that does not exist, a call
+    // with the wrong arity. Turn it back on the day this source carries
+    // types.
+    "strict": false,
+    // Dependencies ship untranspiled ESM, so `allowJs` follows an import
+    // straight into node_modules and grades highlight.js's source as ours.
+    "maxNodeModuleJsDepth": 0,
+    "types": ["node"]
+  },
+  // src/ is the whole shipped surface. example/ is its own package with its
+  // own type layer, and tools/ is Python.
+  "include": ["src/**/*.mjs"],
+  "exclude": ["node_modules", "example", "out"]
+}

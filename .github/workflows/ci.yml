@@ -1,0 +1,72 @@
+name: ci
+
+# The generator and the example site, gated on every change.
+#
+# Both packages are named here rather than discovered, and each script is
+# named rather than looped over, because a task list is what makes a gate
+# readable: a person -- or ordnung, which reads workflows -- can see that this
+# repository typechecks, lints, formats, tests and builds without running it.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  javascript:
+    name: javascript
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          # Pinned: `latest` is a different Bun on different days, and a gate
+          # that goes red because a runner picked one up is a gate nobody can
+          # act on.
+          bun-version: "1.4.0"
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Format
+        run: bun run format
+
+      # Building the example from the generator is the check this repository
+      # has always had, under the name every other member uses: it walks the
+      # whole path from markdown to pages, and a crash anywhere in it lands
+      # here.
+      - name: Test
+        run: bun run test
+
+      - name: Install the example
+        working-directory: example
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck the example
+        working-directory: example
+        run: bun run typecheck
+
+      - name: Lint the example
+        working-directory: example
+        run: bun run lint
+
+      - name: Format the example
+        working-directory: example
+        run: bun run format
+
+      - name: Build the example
+        working-directory: example
+        run: bun run build
