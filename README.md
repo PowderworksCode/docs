@@ -83,6 +83,27 @@ HTML, so agents can fetch either form without content negotiation.
 Emitted alongside the pages: `sitemap.xml`, `llms.txt`, `404.html`, and
 `theme.css` wherever a page references it.
 
+## Values that move
+
+A page that quotes the release it documents goes stale the day after it is
+written. `--var name=value` fills `{{name}}` in wherever it appears — body,
+frontmatter, and the markdown twin alike — so the site names the version and
+the page never does:
+
+```sh
+powderworks-docs build content --out out --site straitjacket \
+  --var version="$(sed -n 's/^version = "\(.*\)"$/\1/p' ../Cargo.toml | head -n 1)"
+```
+
+```markdown
+- uses: PowderworksCode/straitjacket@v{{version}}
+```
+
+A name is lowercase letters, digits and dashes, and a `{{name}}` with no
+`--var` behind it fails the build rather than shipping its braces to a reader.
+A `$` in front is left alone, so a workflow example's `${{ github.token }}`
+passes through untouched.
+
 ## The card a link shows
 
 `--social` names the image; `tools/social-card.py` draws one to the same bones
