@@ -116,10 +116,16 @@ function registry() {
   };
 }
 
+// Most projects have no mark, and a fleet is a list of projects rather than a
+// list of pictures, so a missing directory is an absence and not a failure.
 function markOf(beside, slug) {
-  const found = readdirSync(`${beside}${slug}`, { withFileTypes: true })
-    .map((entry) => entry.name)
-    .find((name) => name.replace(/\.[^.]+$/, "") === "logo");
+  let names = [];
+  try {
+    names = readdirSync(`${beside}${slug}`);
+  } catch {
+    return undefined;
+  }
+  const found = names.find((name) => name.replace(/\.[^.]+$/, "") === "logo");
   return found && `/assets/${slug}/${found}`;
 }
 

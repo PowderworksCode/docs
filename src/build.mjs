@@ -534,9 +534,11 @@ function fleet(html, site) {
   const marker = "<!--projects-->";
   if (!html.includes(marker)) return html;
   const rows = (site.projects ?? []).map((project) => {
+    // The gutter is held open whether or not there is a mark to put in it, so
+    // a fleet where only some projects have one still reads as a list.
     const mark = project.logo
       ? `<img class="fleet-mark" src="${escapeHtml(project.logo)}" alt="">`
-      : "";
+      : `<span class="fleet-mark"></span>`;
     const where = project.url || project.repo;
     const links = [
       project.url && `<a href="${escapeHtml(project.url)}">Site</a>`,
