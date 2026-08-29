@@ -1,6 +1,6 @@
 # powderworks-docs
 
-Turns a tree of markdown into a tree of indexes. One small script, to copy a code block; nothing else runs in the browser.
+Turns a tree of markdown into a tree of indexes. One small script to copy a code block, another to open the index on a narrow screen; nothing else runs in the browser.
 
 Every directory is a section; every section gets an index page listing its
 children — title and one-line description from frontmatter. Breadcrumbs come
@@ -102,6 +102,20 @@ python3 node_modules/powderworks-docs/tools/social-card.py \
 
 A long name wraps rather than shrinking past the point where it would read
 smaller than its own tagline. Without a logo the text simply has the width.
+
+## The index on a narrow screen
+
+The index is the sidebar on a wide screen and a button on a narrow one: the
+name on one side of the head of the page, the button on the other, and the
+whole tree — sub-lists included — beneath them when it is asked for. It pushes
+the page down rather than covering it, so there is no overlay to trap, dim or
+lock, and the button is a button, which is what a screen reader and a keyboard
+already know how to work.
+
+The button is only shown once the page has said, in a line in its head, that
+scripts run here. Where they do not, the index sits above the words as it
+always has, top level only, and nobody is handed a control that cannot open
+anything.
 
 ## A site with nothing to index
 

@@ -24,6 +24,22 @@ main { max-width: 46rem; }
 @media (max-width: 56rem) {
   .wrap, .wrap.solo { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
   nav.tree ul ul { display: none; }
+
+  /* The column head on a narrow screen: the name on one side, the button on
+     the other, the index beneath them both when it is asked for. */
+  .side { display: grid; grid-template-columns: minmax(0, 1fr) auto;
+          align-items: center; column-gap: 1rem; row-gap: 1rem; }
+  .side .brand { margin: 0; }
+  .side nav.tree { grid-column: 1 / -1; }
+
+  /* Where the script runs, the index waits behind the button; where it does
+     not, the button is never shown and the index stays where it was. */
+  .js .burger { display: inline-flex; }
+  .js nav.tree { position: static; display: none; }
+  .js nav.tree.open { display: block; }
+  /* Asked for in full, given in full: an open index shows its sub-lists,
+     which the always-there one has no room for. */
+  .js nav.tree.open ul ul { display: block; }
 }
 
 /* The index list on the left: the whole tree, all the time, in the body
@@ -127,6 +143,16 @@ ul.index span.dim { display: block; margin-top: .15rem; }
         background: var(--bg); border: 1px solid var(--line);
         border-radius: 4px; }
 .copy:hover { color: var(--fg); }
+
+/* The menu button: the copy button's box, at the size a thumb needs. It is
+   hidden wherever the index is already on the page -- every wide screen, and
+   any screen at all without the script that would open it. */
+.burger { display: none; align-items: center; justify-content: center;
+          width: 2.75rem; height: 2.75rem; padding: 0; cursor: pointer;
+          color: var(--fg); background: var(--bg);
+          border: 1px solid var(--line); border-radius: 4px; }
+.burger .ex, .burger[aria-expanded="true"] .bars { display: none; }
+.burger[aria-expanded="true"] .ex { display: block; }
 
 code, pre { font-family: var(--font-mono); font-size: .875rem; }
 pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px;
