@@ -210,3 +210,42 @@ footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line);
   .cover { float: none; max-width: none; margin: .5rem 0 1.25rem;
            text-align: center; }
 }
+
+/* Syntax highlighting, applied at build time by highlight.js. Six colours
+   rather than the thirty a full theme defines: a code block should read as
+   prose with structure, not as a christmas tree, and the eye only needs to
+   separate what a thing IS from what it is CALLED. Anything unmapped inherits
+   the body colour, which is the right default for the parts of a program that
+   are just names. */
+:root {
+  --hl-keyword: #8250df;   /* keyword, operator, the language's own words */
+  --hl-string:  #0a6847;   /* string, char, regex */
+  --hl-comment: #6a737d;   /* comment, and anything else that is not code */
+  --hl-name:    #0550ae;   /* function and type names at their definition */
+  --hl-literal: #953800;   /* number, boolean, null */
+  --hl-attr:    #24292f;   /* attribute, property, punctuation-ish */
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --hl-keyword: #d2a8ff;
+    --hl-string:  #7ee787;
+    --hl-comment: #8b949e;
+    --hl-name:    #79c0ff;
+    --hl-literal: #ffa657;
+    --hl-attr:    #c9d1d9;
+  }
+}
+
+.hljs-keyword, .hljs-operator, .hljs-literal.hljs-keyword,
+.hljs-selector-tag, .hljs-built_in, .hljs-meta { color: var(--hl-keyword); }
+.hljs-string, .hljs-char, .hljs-regexp, .hljs-symbol,
+.hljs-template-string, .hljs-quote { color: var(--hl-string); }
+.hljs-comment { color: var(--hl-comment); font-style: italic; }
+.hljs-title, .hljs-title.function_, .hljs-title.class_,
+.hljs-section, .hljs-name { color: var(--hl-name); }
+.hljs-number, .hljs-literal { color: var(--hl-literal); }
+.hljs-attr, .hljs-attribute, .hljs-property,
+.hljs-variable, .hljs-params { color: var(--hl-attr); }
+/* A diff or a shell prompt should not be louder than the code it sits in. */
+.hljs-addition { color: var(--hl-string); }
+.hljs-deletion { color: var(--hl-literal); }
