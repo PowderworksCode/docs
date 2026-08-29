@@ -62,10 +62,11 @@ jobs:
           test -s out/index.html
           grep -q 'class="burger"' out/index.html
 
-      # Trusted publishing wants a newer npm than the image happens to ship,
-      # and "happens to ship" is not a thing to release on.
+      # Trusted publishing wants 11.5.1 or newer, and what the runner image
+      # happens to ship is not a thing to release on. Latest rather than a
+      # range: a range that reads ^11 would quietly step back off npm 12.
       - name: An npm that can do this
-        run: npm install --global npm@^11.5.1
+        run: npm install --global npm@latest
 
       # access is in publishConfig, so the manifest says what this publish is
       # rather than the command line saying it somewhere else. Provenance is
