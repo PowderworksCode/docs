@@ -84,9 +84,28 @@ license = "OFL-1.1"
 specimen = "https://fonts.google.com/specimen/Fredoka"
 
 [site.treebank]
+# Not published yet: the site is built and its packs are in R2, but the
+# domain is not yet routed to the Worker. One word, once it serves.
 published = false
-name = "treebank"
-tagline = "Tree-sitter grammars, checked daily against the top hundred packages in each language."
+name = "Treebank"
+tagline = "A growing collection of well-tested Tree-sitter grammars"
+url = "https://treebank.dev"
+github = "PowderworksCode/treebank"
+tab-title = "Treebank by Powderworks"
+
+# Fraunces italic with WONK on. The ttf is a static instance committed in the
+# treebank repo rather than Google's variable file, because social-card.py
+# draws with Pillow, which cannot set variation axes -- the variable file's
+# default instance is opsz=9 wght=900, a 9pt Black, where the site sets a
+# 144pt Semibold. Pointing at the instance keeps the card and the site in the
+# same letterforms.
+[site.treebank.wordmark]
+family = "Fraunces"
+words = ["Treebank"]
+woff2 = "/fraunces-latin.woff2"
+ttf = "https://raw.githubusercontent.com/PowderworksCode/treebank/main/site/public/fraunces-wonk-italic.ttf"
+license = "OFL-1.1"
+specimen = "https://fonts.google.com/specimen/Fraunces"
 github = "PowderworksCode/treebank"
 
 [site.langbank]
