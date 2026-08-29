@@ -1,6 +1,6 @@
 {
   "name": "@powderworks/docs",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Turn a tree of markdown into a tree of indexes. One small script to copy a code block, another to open the index on a narrow screen.",
   "license": "MIT",
   "repository": {
