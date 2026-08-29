@@ -1,0 +1,64 @@
+name: release
+
+# The generator reaches npm this way and no other: a tag whose name matches the
+# version in package.json. What a consumer will actually run is run here first,
+# and from the packed tarball rather than from the checkout -- the working tree
+# carries files that `files` does not ship, so a build that passes here and
+# fails for a site is exactly the mistake this step exists to catch.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  # npm provenance signs the publish with this run's OIDC token, which is what
+  # lets a reader tie the tarball on the registry back to this commit.
+  id-token: write
+
+jobs:
+  publish:
+    name: publish to npm
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: The tag and the manifest agree
+        id: version
+        run: |
+          tagged="${GITHUB_REF_NAME#v}"
+          manifest="$(node -p "require('./package.json').version")"
+          if [ "$tagged" != "$manifest" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} says ${tagged}, package.json says ${manifest}"
+            exit 1
+          fi
+          echo "version=${manifest}" >> "$GITHUB_OUTPUT"
+
+      - name: What ships
+        run: npm pack --pack-destination /tmp
+
+      # A site names itself out of powderworks.toml and sets that name in a
+      # face out of fonts/, and both are in the tarball only because `files`
+      # lists them. Building the example from the packed copy is what proves
+      # the list is complete.
+      - name: A site builds from what ships
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          mkdir /tmp/consumer && cd /tmp/consumer
+          npm init -y > /dev/null
+          npm install --no-audit --no-fund "/tmp/powderworks-docs-${VERSION}.tgz"
+          ./node_modules/.bin/powderworks-docs build \
+            "${GITHUB_WORKSPACE}/example/content" --out out --site example \
+            --static "${GITHUB_WORKSPACE}/example/public"
+          test -s out/index.html
+          grep -q 'class="burger"' out/index.html
+
+      # access and provenance are in publishConfig, so the manifest says what
+      # this publish is rather than the command line saying it somewhere else.
+      - name: Publish
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          printf '//registry.npmjs.org/:_authToken=%s\n' "${NPM_TOKEN}" > ~/.npmrc
+          npm publish

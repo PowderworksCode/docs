@@ -1,7 +1,13 @@
 {
   "name": "powderworks-docs",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Turn a tree of markdown into a tree of indexes. One small script to copy a code block, another to open the index on a narrow screen.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PowderworksCode/docs.git"
+  },
+  "homepage": "https://github.com/PowderworksCode/docs#readme",
   "type": "module",
   "bin": {
     "powderworks-docs": "./src/cli.mjs"
@@ -9,10 +15,17 @@
   "files": [
     "src",
     "theme.css",
-    "tools"
+    "tools",
+    "powderworks.toml",
+    "fonts",
+    "assets"
   ],
   "scripts": {
     "selfcheck": "node src/cli.mjs build example/content --out /tmp/pw-docs-selfcheck --site example --static example/public"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "dependencies": {
     "highlight.js": "^11.12.0",

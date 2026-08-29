@@ -44,6 +44,37 @@ and this script, hashed into the PNG when it is drawn — because freetype hints
 differently from one version to the next and a card drawn on a laptop would
 never match one redrawn on a runner.
 
+## Installing it
+
+```sh
+bun add powderworks-docs      # or npm install powderworks-docs
+```
+
+The package carries what the generator reads at build time: `powderworks.toml`,
+the faces in `fonts/`, and the marks and covers in `assets/`. A site that names
+itself with `--site <key>` gets all three without cloning anything.
+
+## Releasing it
+
+A tag whose name matches the version in `package.json` publishes to npm, and
+nothing else does:
+
+```sh
+npm version minor          # writes package.json and tags it
+git push --follow-tags
+```
+
+The release workflow refuses a tag that disagrees with the manifest, packs the
+tarball, installs *that* into an empty directory, builds the example site from
+it, and only then publishes. Building from the tarball rather than from the
+checkout is the point: `files` is an easy list to leave a directory out of, and
+a site that cannot find `powderworks.toml` fails in the consumer's repository
+rather than in this one.
+
+It needs one secret, `NPM_TOKEN`. The publish is signed with npm provenance, so
+a reader can tie the tarball on the registry back to the commit and the run
+that made it.
+
 ## Usage
 
 ```sh
