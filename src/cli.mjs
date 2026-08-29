@@ -89,7 +89,7 @@ function registry() {
   // with the mark that ships beside this file.
   const beside = new URL("./assets/", pathToFileURL(where)).pathname;
   const projects = Object.entries(site)
-    .filter(([slug, entry]) => slug !== key && entry.name)
+    .filter(([slug, entry]) => slug !== key && entry.name && entry.published)
     .map(([slug, entry]) => ({
       key: slug,
       name: entry.name,
@@ -97,6 +97,8 @@ function registry() {
       url: entry.url,
       repo: entry.github && `https://github.com/${entry.github}`,
       logo: markOf(beside, slug),
+      font: entry.wordmark?.family && `"${entry.wordmark.family}"`,
+      woff2: entry.wordmark?.woff2,
     }));
 
   return {

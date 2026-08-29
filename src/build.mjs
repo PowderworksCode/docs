@@ -52,6 +52,13 @@ function renderMarkdown(text) {
   return marked.parse(text);
 }
 
+const MARKER = "<!--projects-->";
+
+function lists(node) {
+  if (node.root?.body?.includes(MARKER) || node.body?.includes(MARKER)) return true;
+  return (node.children ?? []).some(lists);
+}
+
 // The three pictures every site has are found by name in its static directory
 // rather than recorded as paths somewhere else. A path into another repository
 // is a thing to get wrong; a filename is a thing to follow.
@@ -66,7 +73,8 @@ async function conventional(options) {
   };
   return {
     ...options,
-    logo: options.logo ?? named("logo"),
+    logo: options.logo ?? named("favicon") ?? named("logo"),
+    touchIcon: named("apple-touch-icon"),
     social: options.social ?? named("social"),
   };
 }
@@ -74,6 +82,10 @@ async function conventional(options) {
 export async function build(contentDir, outDir, settings) {
   const options = await conventional(settings);
   const tree = await readTree(path.resolve(contentDir));
+  // Only a site that lists the fleet pays for it: the other projects' marks
+  // and the faces their names are set in are fetched, declared and copied for
+  // that page alone, and a site that never mentions them ships none of it.
+  if (!lists(tree)) options.projects = [];
   const site = { ...options, name: options.name ?? title(tree) ?? "docs", tree };
   const theme = await readFile(new URL("../theme.css", import.meta.url), "utf8") +
     wordmarkFace(options);
@@ -91,9 +103,11 @@ export async function build(contentDir, outDir, settings) {
   await writeNotFound(site, outDir);
   // The shared pictures first, so a site that keeps its own copy overwrites it.
   if (options.assetsDir) await cp(options.assetsDir, outDir, { recursive: true });
-  // The faces this site's names are set in. They ship with the generator so
-  // that a family resemblance does not mean the same file committed four times.
-  for (const mark of marks(options)) {
+  // The faces this page sets names in -- its own, and every project it lists,
+  // because a fleet where each name is in its own face needs each of them.
+  // They ship with the generator so that a family resemblance does not mean the
+  // same file committed once per repository.
+  for (const mark of [...marks(options), ...(options.projects ?? [])]) {
     if (!mark.woff2 || !options.fontsDir) continue;
     const face = path.basename(mark.woff2);
     await cp(path.join(options.fontsDir, face), path.join(outDir, face))
@@ -464,13 +478,24 @@ function wordmarkFace(options) {
         : "";
       return `\n${face}.wordmark-${index + 1} { font-family: ${mark.font}, var(--font-body); }\n`;
     })
+    .concat((options.projects ?? []).map((project) => {
+      if (!project.font) return "";
+      const face = project.woff2 && !declared.has(project.woff2)
+        ? (declared.add(project.woff2),
+          `@font-face { font-family: ${project.font}; font-style: normal;\n` +
+          `  font-weight: 400; font-display: block;\n` +
+          `  src: url("${project.woff2}") format("woff2"); }\n`)
+        : "";
+      return `\n${face}.mark-${project.key} { font-family: ${project.font}, var(--font-body); }\n`;
+    }))
     .join("");
 }
 
 // Fonts are fetched in CORS mode whatever their origin, so a preload without
 // crossorigin is a second download rather than a head start.
 function fontLink(site) {
-  return [...new Set(marks(site).map((mark) => mark.woff2).filter(Boolean))]
+  const wanted = [...marks(site), ...(site.projects ?? [])];
+  return [...new Set(wanted.map((mark) => mark.woff2).filter(Boolean))]
     .map((woff2) => `<link rel="preload" as="font" type="font/woff2" ` +
       `href="${escapeHtml(woff2)}" crossorigin>`)
     .join("\n");
@@ -534,8 +559,7 @@ function sharing(site, segments, title, description) {
 // sites build themselves out of. The marker is an HTML comment so a generator
 // that does not know it leaves an empty line rather than a broken page.
 function fleet(html, site) {
-  const marker = "<!--projects-->";
-  if (!html.includes(marker)) return html;
+  if (!html.includes(MARKER)) return html;
   const rows = (site.projects ?? []).map((project) => {
     // The gutter is held open whether or not there is a mark to put in it, so
     // a fleet where only some projects have one still reads as a list.
@@ -547,13 +571,16 @@ function fleet(html, site) {
       project.url && `<a href="${escapeHtml(project.url)}">Site</a>`,
       project.repo && `<a href="${escapeHtml(project.repo)}">GitHub</a>`,
     ].filter(Boolean).join('<span class="dim"> · </span>');
+    const named = project.font
+      ? `<span class="wordmark mark-${project.key}">${escapeHtml(project.name)}</span>`
+      : escapeHtml(project.name);
     return `<li>${mark}<div><a class="fleet-name" href="${escapeHtml(where)}">` +
-      `${escapeHtml(project.name)}</a>` +
+      `${named}</a>` +
       (project.tagline ? `<span class="dim">${escapeHtml(project.tagline)}</span>` : "") +
       (links ? `<span class="dim">${links}</span>` : "") +
       `</div></li>`;
   });
-  return html.replace(marker, rows.length ? `<ul class="fleet">${rows.join("")}</ul>` : "");
+  return html.replace(MARKER, rows.length ? `<ul class="fleet">${rows.join("")}</ul>` : "");
 }
 
 function pageShell({ site, segments, title: pageTitle, tab, description, trail, body }) {
@@ -571,6 +598,7 @@ function pageShell({ site, segments, title: pageTitle, tab, description, trail, 
 <title>${escapeHtml(tab ?? pageTitle)}${!tab && segments.length ? ` — ${escapeHtml(site.name)}` : ""}</title>
 ${description ? `<meta name="description" content="${escapeHtml(description)}">` : ""}
 ${site.logo ? `<link rel="icon" href="${escapeHtml(site.logo)}">` : ""}
+${site.touchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(site.touchIcon)}">` : ""}
 ${canonical}
 ${social}
 ${fontLink(site)}

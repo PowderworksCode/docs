@@ -11,6 +11,10 @@
 # Repos reference each other often enough that the alternative is the same
 # string written into four package.json files and wrong in one of them.
 #
+# published says whether a project is shown to readers, which is not the same
+# question as whether its repository is public. A repository can be readable
+# long before it is ready to be recommended.
+#
 # Pictures are in assets/<key>/ beside this file rather than in the sites, so
 # the workshop's own pages can show a project's mark without cloning it. They
 # are found by name, and a site keeping its own copy overwrites the shared one:
@@ -36,6 +40,7 @@ license = "OFL-1.1"
 specimen = "https://fonts.google.com/specimen/IM+Fell+English+SC"
 
 [site.powderworks]
+published = true
 name = "Powderworks"
 full-name = "The Powderworks Agentic Coding Consortium"
 tagline = "An agentic consortium building for the here and now."
@@ -44,6 +49,7 @@ github = "PowderworksCode"
 tab-title = "The Powderworks Agentic Coding Consortium"
 
 [site.straitjacket]
+published = true
 name = "Straitjacket"
 tagline = "A secret scanner, but for slop."
 url = "https://straitjacket.dev"
@@ -59,31 +65,46 @@ license = "OFL-1.1"
 specimen = "https://fonts.google.com/specimen/Manufacturing+Consent"
 
 [site.ordnung]
-name = "ordnung"
-tagline = "Everything in its right place."
+published = true
+name = "Ordnung"
+tagline = "Repository order, made explicit."
+url = "https://ordnung.dev"
 github = "PowderworksCode/ordnung"
 
+[site.ordnung.wordmark]
+family = "Fredoka"
+words = ["Ordnung"]
+woff2 = "/fredoka-latin.woff2"
+ttf = "https://raw.githubusercontent.com/google/fonts/main/ofl/fredoka/Fredoka%5Bwdth,wght%5D.ttf"
+license = "OFL-1.1"
+specimen = "https://fonts.google.com/specimen/Fredoka"
+
 [site.treebank]
+published = false
 name = "treebank"
 tagline = "Tree-sitter grammars, checked daily against the top hundred packages in each language."
 github = "PowderworksCode/treebank"
 
 [site.langbank]
+published = false
 name = "langbank"
 tagline = "What a language is, how to recognise it, and what its tooling can be asked."
 github = "PowderworksCode/langbank"
 
 [site.jawohl]
+published = false
 name = "jawohl"
 tagline = "Completes partial JSON as it streams in, token by token, from Rust, Python or JavaScript."
 github = "PowderworksCode/jawohl"
 
 [site.jedem]
+published = false
 name = "jedem"
 tagline = "Expose a Rust function once; call it from every language, with its shape intact."
 github = "PowderworksCode/jedem"
 
 [site.infact]
+published = false
 name = "infact"
 tagline = "Typed, provenance-carrying facts derived from observations and kept up to date incrementally."
 github = "PowderworksCode/infact"
