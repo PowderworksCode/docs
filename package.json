@@ -10,7 +10,7 @@
   "homepage": "https://github.com/PowderworksCode/docs#readme",
   "type": "module",
   "bin": {
-    "powderworks-docs": "./src/cli.mjs"
+    "powderworks-docs": "src/cli.mjs"
   },
   "files": [
     "src",
