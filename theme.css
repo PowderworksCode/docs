@@ -6,10 +6,12 @@
   --bg: #fdfdfc;   --line: #e3e3e0;
   --code-bg: #f4f4f1;
   --accent: #0000ee;
+  --veil: rgba(253, 253, 252, 0);
 }
 @media (prefers-color-scheme: dark) {
   :root { --fg: #e8e8e6; --dim: #a0a09b; --bg: #16161a;
-          --line: #2c2c31; --code-bg: #1e1e23; --accent: #8ab4f8; }
+          --line: #2c2c31; --code-bg: #1e1e23; --accent: #8ab4f8;
+          --veil: rgba(8, 8, 10, .78); }
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--fg);
@@ -75,8 +77,19 @@ blockquote { color: var(--dim); border-left: 2px solid var(--line);
 
 /* A site can put a picture behind everything. The page then reads off a panel
    rather than off the picture, which is the only way the words stay words.
-   Fixed, so the artwork holds still while the column scrolls over it. */
-body.has-hero { background: var(--hero) center / cover fixed no-repeat; }
+   Fixed, so the artwork holds still while the column scrolls over it.
+   
+   The veil is what makes that work in the dark. These pictures are drawn on
+   white, and a near-black panel floating in a bright field is the wrong way
+   round: the surround should be darker than the thing being read, not
+   brighter. In the light the veil is clear and the artwork is itself. */
+body.has-hero {
+  background-image: linear-gradient(var(--veil), var(--veil)), var(--hero);
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
 body.has-hero .wrap { margin: 2.5rem auto; padding: 2.75rem 2.5rem 3rem;
                       background: var(--bg); border: 1px solid var(--line);
                       border-radius: 8px; }
