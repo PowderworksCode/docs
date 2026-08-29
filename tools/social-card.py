@@ -132,7 +132,8 @@ def from_registry(key, where, root):
         "tagline": mine.get("tagline", ""),
         "url": (mine.get("url") or "").removeprefix("https://").removeprefix("http://").rstrip("/"),
         "logo": named(root, "cover") or named(where.parent / "assets" / key, "cover"),
-        "font": mine.get("wordmark", {}).get("ttf"),
+        "font": mine.get("wordmark", {}).get("ttf")
+        or config.get("org", {}).get("wordmark", {}).get("ttf"),
         "out": str(Path(root) / "social.png"),
     }
 
@@ -148,10 +149,16 @@ def named(root, stem):
 
 STAMP = "powderworks-card"
 
+# Bump when the drawing changes: the geometry above, or how the pieces are
+# arranged below. Hashing this file instead was the first attempt, and it made
+# every card in every repository stale for an edit that moved no pixel -- a
+# fallback, a docstring -- which across a fleet is a lockstep nobody wants.
+LAYOUT = 1
+
 
 def fingerprint(said):
     """What the card is a function of: the words, the picture, the face, and
-    the code that arranges them.
+    the version of the arrangement.
 
     Comparing the drawings instead would mean comparing rendering, and freetype
     hints differently from one version to the next, so a card drawn on a laptop
@@ -162,7 +169,8 @@ def fingerprint(said):
     digest = hashlib.sha256()
     for word in (said.name, said.tagline, said.url):
         digest.update(f"{word or ''}\x00".encode())
-    for path in (said.logo, local(said.font), __file__):
+    digest.update(f"layout {LAYOUT}\x00".encode())
+    for path in (said.logo, local(said.font)):
         if path:
             digest.update(Path(path).read_bytes())
     return digest.hexdigest()[:16]

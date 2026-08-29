@@ -6,7 +6,7 @@
 // Every directory is a section; every section gets an index page listing its
 // children. The only script emitted is the one that copies a code block.
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { parse } from "smol-toml";
 import { build } from "./build.mjs";
@@ -85,10 +85,31 @@ function registry() {
       font: mark.family ? `"${mark.family}"` : undefined,
       woff2: mark.woff2,
     }));
+  // The fleet, for whichever page shows it: every other site in the registry,
+  // with the mark that ships beside this file.
+  const beside = new URL("./assets/", pathToFileURL(where)).pathname;
+  const projects = Object.entries(site)
+    .filter(([slug, entry]) => slug !== key && entry.name && entry.published)
+    .map(([slug, entry]) => ({
+      key: slug,
+      name: entry.name,
+      tagline: entry.tagline,
+      url: entry.url,
+      repo: entry.github && `https://github.com/${entry.github}`,
+      logo: markOf(beside, slug),
+      font: entry.wordmark?.family && `"${entry.wordmark.family}"`,
+      woff2: entry.wordmark?.woff2,
+    }));
+
   return {
+    fontsDir: new URL("./fonts/", pathToFileURL(where)).pathname,
+    projectsDir: projects.some((project) => project.logo) ? beside : undefined,
+    projects,
     siteUrl: mine.url?.replace(/\/$/, ""),
     name: mine.name,
+    fullName: mine["full-name"],
     description: mine.tagline,
+    lede: mine.lede,
     tabTitle: mine["tab-title"],
     assetsDir: existsSync(pictures) ? pictures : undefined,
     github: mine.github,
@@ -97,6 +118,19 @@ function registry() {
     copyright: org.copyright,
     wordmarks: [...face(mine.wordmark), ...face(org.wordmark)],
   };
+}
+
+// Most projects have no mark, and a fleet is a list of projects rather than a
+// list of pictures, so a missing directory is an absence and not a failure.
+function markOf(beside, slug) {
+  let names = [];
+  try {
+    names = readdirSync(`${beside}${slug}`);
+  } catch {
+    return undefined;
+  }
+  const found = names.find((name) => name.replace(/\.[^.]+$/, "") === "logo");
+  return found && `/assets/${slug}/${found}`;
 }
 
 function wordmarks() {
