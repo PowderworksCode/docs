@@ -7,6 +7,22 @@ children — title and one-line description from frontmatter. Breadcrumbs come
 from the path you already have. The whole aesthetic is [cratebank.io](https://cratebank.io):
 system serif, six color tokens, automatic light and dark, one readable column.
 
+## One place for the names
+
+`powderworks.toml` ships with the generator and holds what the sites share and
+what each one varies: the workshop's name and face under `[org]`, a site's own
+name, tagline, domain, logo and face under `[site.<key>]`. A site names itself
+and gets the rest.
+
+```sh
+powderworks-docs build content --out out --site straitjacket --static public
+python3 node_modules/powderworks-docs/tools/social-card.py --site straitjacket
+```
+
+Anything passed on the command line still wins, and `--config` points at a
+different file. Adding a site means an entry here, which is the trade: one
+place to change a name, one repository to open a pull request against.
+
 ## Usage
 
 ```sh

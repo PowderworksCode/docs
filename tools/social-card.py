@@ -19,6 +19,7 @@ Pillow cannot read it. A URL is downloaded to a temporary file.
 import argparse
 import functools
 import tempfile
+import tomllib
 import urllib.request
 from pathlib import Path
 
@@ -116,15 +117,47 @@ def draw_logo(card, path):
     return left
 
 
+def from_registry(key, where, root):
+    """The same powderworks.toml the generator reads, so a name, a face and a
+    picture are written once rather than once here and once in a build script."""
+    where = Path(where or Path(__file__).resolve().parent.parent / "powderworks.toml")
+    config = tomllib.loads(where.read_text())
+    mine = config.get("site", {}).get(key)
+    if mine is None:
+        raise SystemExit(f"no [site.{key}] in {where}")
+    web = lambda path: str(Path(root) / path.lstrip("/")) if path else None
+    return {
+        "name": mine.get("name"),
+        "tagline": mine.get("tagline", ""),
+        "url": (mine.get("url") or "").removeprefix("https://").removeprefix("http://").rstrip("/"),
+        "logo": web(mine.get("cover")),
+        "font": mine.get("wordmark", {}).get("ttf"),
+        "out": web(mine.get("social")),
+    }
+
+
 def main():
     parse = argparse.ArgumentParser(description=__doc__)
-    parse.add_argument("--name", required=True)
-    parse.add_argument("--tagline", default="")
-    parse.add_argument("--url", default="")
+    parse.add_argument("--site", help="key in powderworks.toml; fills the rest")
+    parse.add_argument("--config", help="read that file from somewhere else")
+    parse.add_argument("--root", default="public", help="where web paths resolve")
+    parse.add_argument("--name")
+    parse.add_argument("--tagline")
+    parse.add_argument("--url")
     parse.add_argument("--logo")
-    parse.add_argument("--font", required=True, help="ttf or otf, path or URL")
-    parse.add_argument("--out", required=True)
+    parse.add_argument("--font", help="ttf or otf, path or URL")
+    parse.add_argument("--out")
     said = parse.parse_args()
+
+    if said.site:
+        for field, value in from_registry(said.site, said.config, said.root).items():
+            if getattr(said, field) is None:
+                setattr(said, field, value)
+    for needed in ("name", "font", "out"):
+        if getattr(said, needed) is None:
+            raise SystemExit(f"--{needed} is required without --site")
+    said.tagline = said.tagline or ""
+    said.url = said.url or ""
 
     card = Image.new("RGB", (WIDTH, HEIGHT), PAPER)
     draw = ImageDraw.Draw(card)

@@ -15,6 +15,7 @@
     "selfcheck": "node src/cli.mjs build example --out /tmp/pw-docs-selfcheck --site-url https://example.com --name Example --github PowderworksCode/docs"
   },
   "dependencies": {
-    "marked": "^16.4.1"
+    "marked": "^16.4.1",
+    "smol-toml": "^1.8.0"
   }
 }
