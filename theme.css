@@ -30,11 +30,14 @@ main { max-width: 46rem; }
   .side { display: grid; grid-template-columns: minmax(0, 1fr) auto;
           align-items: center; gap: 1rem; }
   .side .brand { margin: 0; }
-  .side nav.tree { grid-column: 1 / -1; }
+  .side .find, .side nav.tree { grid-column: 1 / -1; }
 
   /* Where the script runs, the index waits behind the button; where it does
-     not, the button is never shown and the index stays where it was. */
+     not, the button is never shown and the index stays where it was. The
+     search box waits behind the same button as the index it searches. */
   .js .burger { display: inline-flex; }
+  .js .side .find { display: none; }
+  .js .burger[aria-expanded="true"] ~ .find { display: block; }
   .js nav.tree { position: static; display: none; }
   .js nav.tree.open { display: block; }
   /* Asked for in full, given in full: an open index shows its sub-lists,
@@ -53,6 +56,21 @@ nav.tree a:hover { text-decoration: underline; text-underline-offset: 3px; }
 nav.tree a.current { font-weight: 700; text-decoration: underline;
                      text-underline-offset: 3px; }
 nav.tree li.group > a { font-weight: 700; }
+
+/* The search box, above the index it searches; the stylesheet reveals it only
+   where scripts run, for the same reason it reveals the button. Results stand
+   where the tree stood, in its column and its voice, with the match set bold
+   rather than highlit: a page of yellow smears is hazard tape, not type. */
+.find { display: none; margin: 0 0 1.1rem; }
+.js .find { display: block; }
+.find input { width: 100%; padding: .4rem .6rem; font: inherit;
+              font-size: .95rem; color: var(--fg); background: var(--bg);
+              border: 1px solid var(--line); border-radius: 4px; }
+nav.tree .found { margin: 0 0 .8rem; }
+nav.tree .results li { margin: 0 0 .9rem; }
+nav.tree .results a { display: inline; padding: 0; font-weight: 700; }
+nav.tree .results .dim { display: block; margin-top: .15rem; }
+.results mark { background: none; color: var(--fg); font-weight: 700; }
 
 .crumbs { font-size: .9rem; line-height: 1.65; min-height: 1.65em;
           margin-bottom: .75rem; }
