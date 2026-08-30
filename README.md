@@ -1,6 +1,6 @@
 # powderworks-docs
 
-Turns a tree of markdown into a tree of indexes. One small script to copy a code block, another to open the index on a narrow screen; nothing else runs in the browser.
+Turns a tree of markdown into a tree of indexes. One small script to copy a code block, another to open the index on a narrow screen, a third to search — Pagefind, fetched only when a reader asks; nothing else runs in the browser.
 
 Every directory is a section; every section gets an index page listing its
 children — title and one-line description from frontmatter. Breadcrumbs come
@@ -176,6 +176,27 @@ The button is only shown once the page has said, in a line in its head, that
 scripts run here. Where they do not, the index sits above the words as it
 always has, top level only, and nobody is handed a control that cannot open
 anything.
+
+## Search
+
+A site with a tree gets a box above it, answered by
+[Pagefind](https://pagefind.app). The index is built at the end of the build
+from the pages as written, so what search finds is what is served, and it
+ships as static fragments beside them: a page load fetches none of it, and the
+first search fetches the engine and the few pieces the query touches.
+
+Results stand where the tree stood — a list in place of a list, in the same
+column and the same voice — and clearing the box, or Escape, puts the tree
+back. Like the menu button, the box only appears once the page has said that
+scripts run here, so a reader without them is never offered a box that cannot
+answer.
+
+The trail, the pager, the footer and the heading marks stay out of the index,
+so a section's name finds the section rather than every page that links to it;
+so does the 404 page, which is the one page a search should never find. A site
+with a single page builds no index and shows no box — there is nothing to find
+that is not already on screen — and `--no-search`, or `search = false` on the
+site's registry entry, says no for the rest.
 
 ## A site with nothing to index
 

@@ -78,9 +78,11 @@ marked.use({
     heading(token) {
       const text = this.parser.parseInline(token.tokens);
       const id = headingId(text);
+      // The mark is furniture, not words: left out of the search index, or
+      // every heading would end in a stray #.
       return (
         `<h${token.depth} id="${id}">${text}` +
-        `<a class="anchor" href="#${id}" aria-label="Link to this section">#</a>` +
+        `<a class="anchor" href="#${id}" aria-label="Link to this section" data-pagefind-ignore>#</a>` +
         `</h${token.depth}>\n`
       );
     },
@@ -153,6 +155,10 @@ export async function build(contentDir, outDir, settings) {
     ...options,
     name: options.name ?? title(tree) ?? "docs",
     tree,
+    // Search rides along wherever there is a tree to search. A site of one
+    // page has nothing to find that is not already on screen, and --no-search
+    // says no for the rest.
+    search: options.search !== false && tree.children.length > 0,
   };
   const theme =
     (await readFile(new URL("../theme.css", import.meta.url), "utf8")) +
@@ -196,6 +202,27 @@ export async function build(contentDir, outDir, settings) {
   }
   if (options.staticDir)
     await cp(options.staticDir, outDir, { recursive: true });
+  if (site.search) await writeSearchIndex(outDir);
+}
+
+// The search index, built by Pagefind from the pages exactly as written, so
+// what search finds is what is served. Only pages marked data-pagefind-body
+// are read -- every page but the 404, and whatever HTML --static copied in --
+// and the furniture on each (the trail, the pager, the footer) is marked
+// ignored, so a section's name finds the section rather than every page that
+// links to it. The index ships as fragments beside the pages, fetched
+// piecewise on first search: a page load costs nothing, and a search costs a
+// few pieces.
+async function writeSearchIndex(outDir) {
+  const { createIndex, close } = await import("pagefind");
+  const said = (response) => {
+    if (response.errors.length) throw new Error(response.errors.join("\n"));
+    return response;
+  };
+  const { index } = said(await createIndex());
+  said(await index.addDirectory({ path: outDir }));
+  said(await index.writeFiles({ outputPath: path.join(outDir, "pagefind") }));
+  await close();
 }
 
 // Markdown sources travel beside their rendered page, so agents can fetch
@@ -466,12 +493,16 @@ async function writeLlmsTxt(tree, site, outDir) {
 }
 
 async function writeNotFound(site, outDir) {
+  // Unlisted: the one page a search should never find is the one that says
+  // there is nothing here. The box itself still shows -- a reader who landed
+  // wrong is exactly the reader with something to look for.
   const html = pageShell({
     site,
     segments: [],
     title: "Page not found",
     description: "",
     trail: [],
+    unlisted: true,
     body:
       `<p>There is nothing at this address.</p>` +
       `<p><a href="/">Back to the start</a>.</p>`,
@@ -496,7 +527,7 @@ function breadcrumbs(trail, _site, segments) {
     parts.push({ label: escapeHtml(title(node)), href: `${href}/` });
   }
   return (
-    `<nav class="crumbs">` +
+    `<nav class="crumbs" data-pagefind-ignore>` +
     parts
       .map((part) => `<a href="${part.href}">${part.label}</a>`)
       .join('<span class="dim"> / </span>') +
@@ -508,14 +539,14 @@ function breadcrumbs(trail, _site, segments) {
 // it stands alone rather than joining the source link and the licence.
 function footer(site) {
   if (site.copyright)
-    return `<footer>&copy; ${new Date().getFullYear()} ${escapeHtml(site.copyright)}</footer>`;
+    return `<footer data-pagefind-ignore>&copy; ${new Date().getFullYear()} ${escapeHtml(site.copyright)}</footer>`;
   const bits = [];
   if (site.github)
     bits.push(
       `<a href="https://github.com/${String(site.github).replace(/^https?:\/\/github\.com\//, "")}">Source</a>`,
     );
   if (site.license) bits.push(escapeHtml(site.license));
-  return `<footer>${bits.join(" · ")}</footer>`;
+  return `<footer data-pagefind-ignore>${bits.join(" · ")}</footer>`;
 }
 
 // Pages in sidebar order, for the previous/next links at the foot of each
@@ -544,7 +575,7 @@ function pager(tree, segments) {
       ? `<a href="${page.path}" class="${align}">${arrow} ${escapeHtml(page.title)}</a>`
       : "<span></span>";
   return (
-    `<nav class="pager">` +
+    `<nav class="pager" data-pagefind-ignore>` +
     side(previous, "\u2190", "prev") +
     side(next, "\u2192", "next") +
     `</nav>`
@@ -575,6 +606,15 @@ const BURGER =
   ` stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true">` +
   `<path d="M4 4l8 8M12 4l-8 8"/></svg>` +
   `</button>`;
+
+// The search box, above the index it searches. Like the button, it ships in
+// the markup and the stylesheet only reveals it once the page has said that
+// scripts run here: a reader without them is not offered a box that cannot
+// answer.
+const FIND =
+  `<search class="find">` +
+  `<input type="search" placeholder="Search" aria-label="Search">` +
+  `</search>`;
 
 // The first of the two scripts this generator emits. It adds a copy button to
 // each code block, and builds the buttons rather than shipping them in the
@@ -631,6 +671,74 @@ const burger = document.querySelector(".burger");
 if (menu && burger) {
   burger.addEventListener("click", () => {
     burger.setAttribute("aria-expanded", String(menu.classList.toggle("open")));
+  });
+}
+</scr` + `ipt>`;
+
+// The third script: search, which is Pagefind's engine behind the page's own
+// box. Results stand where the tree stood -- a list in place of a list, not
+// an overlay -- and clearing the box, or Escape, puts the tree back. The
+// engine and its index are fetched on first use, so a reader who never
+// searches downloads none of it.
+const SEARCH_SCRIPT =
+  `<script>
+const box = document.querySelector(".find input");
+const tree = document.getElementById("site-nav");
+if (box && tree) {
+  const list = tree.querySelector("ul");
+  const found = document.createElement("p");
+  found.className = "dim found";
+  found.setAttribute("role", "status");
+  found.hidden = true;
+  const results = document.createElement("ul");
+  results.className = "results";
+  results.hidden = true;
+  tree.append(found, results);
+
+  let engine;
+  const load = () =>
+    (engine ??= import("/pagefind/pagefind.js").then((it) => (it.init(), it)));
+  box.addEventListener("focus", load, { once: true });
+  box.addEventListener("input", async () => {
+    const query = box.value.trim();
+    if (!query) {
+      list.hidden = false;
+      found.hidden = results.hidden = true;
+      results.textContent = "";
+      return;
+    }
+    const search = await (await load()).debouncedSearch(query);
+    // Null is a search that a newer keystroke overtook; the value check is a
+    // box emptied while this one was in flight.
+    if (search === null || box.value.trim() !== query) return;
+    const pages = await Promise.all(
+      search.results.slice(0, 8).map((result) => result.data()),
+    );
+    if (box.value.trim() !== query) return;
+    results.textContent = "";
+    for (const page of pages) {
+      const row = document.createElement("li");
+      const link = document.createElement("a");
+      link.href = page.url;
+      link.textContent = page.meta.title || page.url;
+      const text = document.createElement("span");
+      text.className = "dim";
+      // The excerpt is Pagefind's, escaped by it, with the match in <mark>.
+      text.innerHTML = page.excerpt;
+      row.append(link, text);
+      results.append(row);
+    }
+    const count = search.results.length;
+    found.textContent = count
+      ? "Found " + count + (count === 1 ? " page." : " pages.")
+      : "Found nothing.";
+    list.hidden = true;
+    found.hidden = results.hidden = false;
+  });
+  box.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    box.value = "";
+    box.dispatchEvent(new Event("input"));
   });
 }
 </scr` + `ipt>`;
@@ -804,6 +912,7 @@ function pageShell({
   description,
   trail,
   body,
+  unlisted,
 }) {
   const canonical = site.siteUrl
     ? `<link rel="canonical" href="${escapeHtml(site.siteUrl + url(segments))}">`
@@ -833,11 +942,12 @@ ${
     ? `<div class="side">
 <p class="brand"><a href="/">${segments.length ? "" : mark(site)}<strong>${wordmarked(escapeHtml(site.name), site)}</strong></a></p>
 ${BURGER}
+${site.search ? FIND : ""}
 ${nav}
 </div>`
     : ""
 }
-<main>
+<main${site.search && !unlisted ? " data-pagefind-body" : ""}>
 ${breadcrumbs(trail, site, segments)}
 ${fleet(wordmarked(body, site), site)}
 ${segments.length ? pager(site.tree, segments) : ""}
@@ -846,6 +956,7 @@ ${footer(site)}
 </div>
 ${COPY_SCRIPT}
 ${MENU_SCRIPT}
+${site.search ? SEARCH_SCRIPT : ""}
 </body>
 </html>
 `;

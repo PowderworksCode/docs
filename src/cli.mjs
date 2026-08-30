@@ -4,8 +4,8 @@
 //   powderworks-docs build <contentDir> --out <outDir> [options]
 //
 // Every directory is a section; every section gets an index page listing its
-// children. The only scripts emitted copy a code block and open the index
-// from behind a button on a narrow screen.
+// children. The only scripts emitted copy a code block, open the index from
+// behind a button on a narrow screen, and put Pagefind behind the search box.
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
@@ -36,6 +36,8 @@ Options:
   --wordmark-woff2 <url>    The woff2 for it, served by this site
   --var <name>=<value> Replace {{name}} in the content with this value;
                        repeat once per name
+  --no-search          No search: neither the box above the index nor the
+                       Pagefind index built behind it
   -h, --help`);
 }
 
@@ -50,6 +52,14 @@ function option(name) {
   const value = args.splice(index, 2)[1];
   if (!value) throw new Error(`--${name} requires a value`);
   return value;
+}
+
+// A flag is present or it is not; there is no value to eat.
+function flag(name) {
+  const index = args.indexOf(`--${name}`);
+  if (index === -1) return false;
+  args.splice(index, 1);
+  return true;
 }
 
 // Options that may repeat, read in the order given. The wordmark trio is
@@ -126,6 +136,7 @@ function registry() {
     github: mine.github,
     logo: mine.logo,
     social: mine.social,
+    search: mine.search,
     copyright: org.copyright,
     wordmarks: [...face(mine.wordmark), ...face(org.wordmark)],
   };
@@ -183,6 +194,9 @@ const given = {
   wordmarks: wordmarks(),
   logo: option("logo"),
   vars: vars(),
+  // Only carried when said: undefined falls away below, so the registry's
+  // answer -- or the default, which is on -- stands unless the line says no.
+  search: flag("no-search") ? false : undefined,
 };
 
 try {
