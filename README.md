@@ -39,10 +39,10 @@ The landing takes its name, tagline and tab from `[site.<key>]` too. A root
 title as the lede.
 
 `--check` compares the committed card against what the config now says. It
-compares the inputs rather than the pixels — the words, the picture, the face
-and this script, hashed into the PNG when it is drawn — because freetype hints
-differently from one version to the next and a card drawn on a laptop would
-never match one redrawn on a runner.
+compares the inputs rather than the pixels — the words, the picture, both
+faces and the arrangement, hashed into the PNG when it is drawn — because
+freetype hints differently from one version to the next and a card drawn on a
+laptop would never match one redrawn on a runner.
 
 ## Installing it
 
@@ -150,6 +150,17 @@ for every site — the name in the site's own face, its tagline, its domain, its
 logo down the right. Needs Pillow, and a `ttf` or `otf` rather than the `woff2`
 the site serves, because Pillow cannot read `woff2`. A URL is fetched once.
 
+Two faces go into a card, and `--site` fills both: the name's, which the site
+names for itself, and the tagline's, which is `[org.body]` and the same on
+every card in the fleet. Both are named rather than looked for on the machine
+drawing. That is the difference between a card and a page: a page is set in
+whatever serif the reader has, a card is drawn once and committed, so a face
+found rather than named means a laptop and a runner draw two different cards
+from one config. Where neither the registry nor `--body-font` names one, the
+script uses a system serif if it can find one and stops if it cannot — Pillow
+will hand out a default for the asking and it is a sans, which is a card that
+is wrong in a way nobody notices until it is posted.
+
 ```sh
 python3 node_modules/@powderworks/docs/tools/social-card.py \
   --name Straitjacket \
@@ -157,6 +168,7 @@ python3 node_modules/@powderworks/docs/tools/social-card.py \
   --url straitjacket.dev \
   --logo public/engraving.jpg \
   --font https://raw.githubusercontent.com/google/fonts/main/ofl/x/X.ttf \
+  --body-font https://raw.githubusercontent.com/google/fonts/main/ofl/y/Y.ttf \
   --out public/social.png
 ```
 

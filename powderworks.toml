@@ -39,6 +39,21 @@ ttf = "https://raw.githubusercontent.com/google/fonts/main/ofl/imfellenglishsc/I
 license = "OFL-1.1"
 specimen = "https://fonts.google.com/specimen/IM+Fell+English+SC"
 
+# The face the cards set everything that is not a name in: the tagline under
+# it, and the domain under that. Named here rather than found on the machine
+# that happens to be drawing, because a card is committed once and looked at
+# by everyone: a laptop with Georgia and a runner with DejaVu would otherwise
+# draw two different cards from one config, and say nothing about it.
+#
+# Charis SIL is a Charter, which is the face Georgia is usually reached for
+# instead of -- sturdy, large in the x-height, drawn to hold up small on a
+# screen -- and it is libre, which Georgia is not.
+[org.body]
+family = "Charis SIL"
+ttf = "https://raw.githubusercontent.com/google/fonts/main/ofl/charissil/CharisSIL-Regular.ttf"
+license = "OFL-1.1"
+specimen = "https://fonts.google.com/specimen/Charis+SIL"
+
 [site.powderworks]
 published = true
 name = "Powderworks"
