@@ -225,13 +225,30 @@ async function writeSearchIndex(outDir) {
   await close();
 }
 
+// A value that means something else in YAML has to say it is a string. A
+// description reading "How to reach us: bug reports" is the common case: the
+// colon makes it a nested mapping, and the emitted file stops being YAML at
+// all. Written plain wherever plain is unambiguous, so the usual page keeps its
+// readable frontmatter.
+function yamlScalar(text) {
+  const risky =
+    text === "" ||
+    text !== text.trim() ||
+    /^[-?:,[\]{}#&*!|>'"%@`]/.test(text) ||
+    /:\s/.test(text) ||
+    text.endsWith(":") ||
+    /\s#/.test(text) ||
+    /[\n\r]/.test(text);
+  return risky ? `"${text.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"` : text;
+}
+
 // Markdown sources travel beside their rendered page, so agents can fetch
 // either form without negotiation.
 function sourceText(pageOrSection) {
   const root = pageOrSection.root ?? pageOrSection;
   if (!root.body) return null;
   const lines = Object.entries(root.frontmatter ?? {}).map(
-    ([key, value]) => `${key}: ${value}`,
+    ([key, value]) => `${key}: ${yamlScalar(String(value))}`,
   );
   return lines.length
     ? `---\n${lines.join("\n")}\n---\n\n${root.body}`

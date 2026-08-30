@@ -24,8 +24,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome lint src",
     "format": "biome format src",
-    "test": "bun run selfcheck",
-    "selfcheck": "node src/cli.mjs build example/content --out /tmp/pw-docs-selfcheck --site example --static example/public"
+    "test": "bun run selfcheck && bun run selfcheck:frontmatter",
+    "selfcheck": "node src/cli.mjs build example/content --out /tmp/pw-docs-selfcheck --site example --static example/public",
+    "selfcheck:frontmatter": "node tools/check-frontmatter.mjs /tmp/pw-docs-selfcheck"
   },
   "publishConfig": {
     "access": "public",
