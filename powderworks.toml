@@ -75,7 +75,7 @@ specimen = "https://fonts.google.com/specimen/Manufacturing+Consent"
 [site.ordnung]
 published = true
 name = "Ordnung"
-tagline = "Repository order, made explicit."
+tagline = "Everything in its right place."
 url = "https://ordnung.dev"
 github = "PowderworksCode/ordnung"
 tab-title = "Ordnung by Powderworks"
