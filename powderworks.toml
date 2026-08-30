@@ -134,7 +134,7 @@ tab-title = "Example by Powderworks"
 [site.langbank]
 published = false
 name = "langbank"
-tagline = "What a language is, how to recognise it, and what its tooling can be asked."
+tagline = "A sprawling collection of facts about programming languages and ecosystems."
 url = "https://langbank.dev"
 github = "PowderworksCode/langbank"
 tab-title = "langbank by Powderworks"
