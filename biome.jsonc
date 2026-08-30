@@ -1,0 +1,12 @@
+{
+  // Biome only discovers biome.json, and the fleet's settings arrive next to
+  // it as biome.base.json. This file is the one line that joins them; the
+  // rules themselves are conf's, and belong there.
+  //
+  // `root` has to be said out loud: biome.base.json declares itself nested, so
+  // a config that extends it inherits that and then looks for a parent it will
+  // never find -- silently falling back to Biome's defaults, which format with
+  // tabs.
+  "root": true,
+  "extends": ["./biome.base.json"]
+}

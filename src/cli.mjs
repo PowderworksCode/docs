@@ -7,7 +7,7 @@
 // children. The only scripts emitted copy a code block and open the index
 // from behind a button on a narrow screen.
 
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { parse } from "smol-toml";
 import { build } from "./build.mjs";
@@ -73,10 +73,15 @@ if (!contentDir || !outDir) {
 // the command line still wins: the file is where a site starts, not a cage.
 function registry() {
   const key = option("site");
-  const where = option("config") ??
+  const where =
+    option("config") ??
     new URL("../powderworks.toml", import.meta.url).pathname;
   if (!key) return {};
-  const { org = {}, site = {} } = parse(readFileSync(where, "utf8"));
+  // A TOML table is a bag of whatever the file said; the shape below is the
+  // registry's own convention, not something the parser can promise.
+  const { org = {}, site = {} } = /** @type {Record<string, any>} */ (
+    parse(readFileSync(where, "utf8"))
+  );
   const mine = site[key];
   if (!mine) throw new Error(`no [site.${key}] in ${where}`);
   // A site's mark and cover live beside this file rather than in the site, so
@@ -185,7 +190,8 @@ try {
     ...shared,
     ...Object.fromEntries(
       Object.entries(given).filter(([, value]) =>
-        Array.isArray(value) ? value.length : value !== undefined),
+        Array.isArray(value) ? value.length : value !== undefined,
+      ),
     ),
   });
 } catch (error) {

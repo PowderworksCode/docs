@@ -5,13 +5,13 @@
   --fg: #111;      --dim: #555;
   --bg: #fdfdfc;   --line: #e3e3e0;
   --code-bg: #f4f4f1;
-  --accent: #0000ee;
-  --veil: rgba(253, 253, 252, 0);
+  --accent: #00e;
+  --veil: rgb(253 253 252 / 0%);
 }
 @media (prefers-color-scheme: dark) {
   :root { --fg: #e8e8e6; --dim: #a0a09b; --bg: #16161a;
           --line: #2c2c31; --code-bg: #1e1e23; --accent: #8ab4f8;
-          --veil: rgba(8, 8, 10, .78); }
+          --veil: rgb(8 8 10 / 78%); }
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--fg);
@@ -21,14 +21,14 @@ body { margin: 0; background: var(--bg); color: var(--fg);
         align-items: start; }
 .wrap.solo { grid-template-columns: minmax(0, 1fr); max-width: 46rem; }
 main { max-width: 46rem; }
-@media (max-width: 56rem) {
+@media (width <= 56rem) {
   .wrap, .wrap.solo { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
   nav.tree ul ul { display: none; }
 
   /* The column head on a narrow screen: the name on one side, the button on
      the other, the index beneath them both when it is asked for. */
   .side { display: grid; grid-template-columns: minmax(0, 1fr) auto;
-          align-items: center; column-gap: 1rem; row-gap: 1rem; }
+          align-items: center; gap: 1rem; }
   .side .brand { margin: 0; }
   .side nav.tree { grid-column: 1 / -1; }
 
@@ -110,7 +110,7 @@ body.has-backdrop {
 body.has-backdrop .wrap { margin: 2.5rem auto; padding: 2.75rem 2.5rem 3rem;
                       background: var(--bg); border: 1px solid var(--line);
                       border-radius: 8px; }
-@media (max-width: 46rem) {
+@media (width <= 46rem) {
   body.has-backdrop { background-attachment: scroll; }
   body.has-backdrop .wrap { margin: 0 auto; border: 0; border-radius: 0; }
 }
@@ -197,7 +197,7 @@ footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line);
 .hero-art { margin: 0; }
 .hero-art img { display: block; width: 15rem; max-width: 100%; height: auto;
                 border: 1px solid var(--line); border-radius: 6px; }
-@media (max-width: 46rem) {
+@media (width <= 46rem) {
   .hero { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
   .hero h1 { font-size: 2.4rem; }
   .hero-art img { width: 12rem; }
@@ -207,7 +207,7 @@ footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line);
    part of the page rather than as a hole punched through it. */
 .embed { display: block; width: 100%; height: 20rem; margin: 1.5rem 0;
          border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
-@media (max-width: 40rem) {
+@media (width <= 40rem) {
   .cover { float: none; max-width: none; margin: .5rem 0 1.25rem;
            text-align: center; }
 }

@@ -3,12 +3,17 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint .",
+    "format": "biome format .",
     "build": "cd .. && bun install --frozen-lockfile && cd example && rm -rf out && node ../src/cli.mjs build content --out out --site example --static public",
     "dev": "bun run build && wrangler dev",
     "preview": "bun run build && wrangler versions upload",
     "deploy": "bun run build && wrangler deploy"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.2",
+    "typescript": "^7.0.2",
     "wrangler": "^4.123.0"
   }
 }

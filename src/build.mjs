@@ -32,9 +32,19 @@ const LANGUAGES = {
 
 // What a fence may be written as, mapped to what is registered above.
 const ALIASES = {
-  sh: "bash", shell: "bash", console: "bash", zsh: "bash",
-  js: "javascript", mjs: "javascript", ts: "typescript", tsx: "typescript",
-  py: "python", rs: "rust", html: "xml", yml: "yaml", query: "scheme",
+  sh: "bash",
+  shell: "bash",
+  console: "bash",
+  zsh: "bash",
+  js: "javascript",
+  mjs: "javascript",
+  ts: "typescript",
+  tsx: "typescript",
+  py: "python",
+  rs: "rust",
+  html: "xml",
+  yml: "yaml",
+  query: "scheme",
 };
 
 for (const [name, load] of Object.entries(LANGUAGES)) {
@@ -59,7 +69,8 @@ marked.use({
     code(token) {
       const lang = (token.lang ?? "").trim().split(/\s+/)[0].toLowerCase();
       const body = hljs.getLanguage(lang)
-        ? hljs.highlight(token.text, { language: lang, ignoreIllegals: true }).value
+        ? hljs.highlight(token.text, { language: lang, ignoreIllegals: true })
+            .value
         : escapeHtml(token.text);
       const attr = lang ? ` class="language-${escapeHtml(lang)}"` : "";
       return `<pre><code${attr}>${body}</code></pre>\n`;
@@ -67,9 +78,11 @@ marked.use({
     heading(token) {
       const text = this.parser.parseInline(token.tokens);
       const id = headingId(text);
-      return `<h${token.depth} id="${id}">${text}` +
+      return (
+        `<h${token.depth} id="${id}">${text}` +
         `<a class="anchor" href="#${id}" aria-label="Link to this section">#</a>` +
-        `</h${token.depth}>\n`;
+        `</h${token.depth}>\n`
+      );
     },
   },
 });
@@ -78,13 +91,14 @@ const headingIds = new Set();
 const ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'" };
 
 function headingId(html) {
-  const base = html
-    .replace(/<[^>]*>/g, "")
-    .replace(/&(amp|lt|gt|quot|#39);/g, (_, name) => ENTITIES[name])
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-") || "section";
+  const base =
+    html
+      .replace(/<[^>]*>/g, "")
+      .replace(/&(amp|lt|gt|quot|#39);/g, (_, name) => ENTITIES[name])
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .trim()
+      .replace(/\s+/g, "-") || "section";
   let id = base;
   for (let n = 2; headingIds.has(id); n++) id = `${base}-${n}`;
   headingIds.add(id);
@@ -101,7 +115,8 @@ function renderMarkdown(text) {
 const MARKER = "<!--projects-->";
 
 function lists(node) {
-  if (node.root?.body?.includes(MARKER) || node.body?.includes(MARKER)) return true;
+  if (node.root?.body?.includes(MARKER) || node.body?.includes(MARKER))
+    return true;
   return (node.children ?? []).some(lists);
 }
 
@@ -111,8 +126,9 @@ function lists(node) {
 async function conventional(options) {
   const where = [options.staticDir, options.assetsDir].filter(Boolean);
   if (!where.length) return options;
-  const files = (await Promise.all(where.map((dir) => readdir(dir).catch(() => []))))
-    .flat();
+  const files = (
+    await Promise.all(where.map((dir) => readdir(dir).catch(() => [])))
+  ).flat();
   const named = (stem) => {
     const found = files.find((name) => name.replace(/\.[^.]+$/, "") === stem);
     return found && `/${found}`;
@@ -133,8 +149,13 @@ export async function build(contentDir, outDir, settings) {
   // and the faces their names are set in are fetched, declared and copied for
   // that page alone, and a site that never mentions them ships none of it.
   if (!lists(tree)) options.projects = [];
-  const site = { ...options, name: options.name ?? title(tree) ?? "docs", tree };
-  const theme = await readFile(new URL("../theme.css", import.meta.url), "utf8") +
+  const site = {
+    ...options,
+    name: options.name ?? title(tree) ?? "docs",
+    tree,
+  };
+  const theme =
+    (await readFile(new URL("../theme.css", import.meta.url), "utf8")) +
     wordmarkFace(options);
 
   // Pages reference ./theme.css, so every emitted directory carries a copy.
@@ -149,7 +170,8 @@ export async function build(contentDir, outDir, settings) {
   await writeLlmsTxt(tree, site, outDir);
   await writeNotFound(site, outDir);
   // The shared pictures first, so a site that keeps its own copy overwrites it.
-  if (options.assetsDir) await cp(options.assetsDir, outDir, { recursive: true });
+  if (options.assetsDir)
+    await cp(options.assetsDir, outDir, { recursive: true });
   // The faces this page sets names in -- its own, and every project it lists,
   // because a fleet where each name is in its own face needs each of them.
   // They ship with the generator so that a family resemblance does not mean the
@@ -157,18 +179,23 @@ export async function build(contentDir, outDir, settings) {
   for (const mark of [...marks(options), ...(options.projects ?? [])]) {
     if (!mark.woff2 || !options.fontsDir) continue;
     const face = path.basename(mark.woff2);
-    await cp(path.join(options.fontsDir, face), path.join(outDir, face))
-      .catch(() => {});
+    await cp(path.join(options.fontsDir, face), path.join(outDir, face)).catch(
+      () => {},
+    );
   }
   // Marks only, for a page that lists the fleet: a logo is small and a cover
   // is not, and no site needs another site's cover.
-  for (const project of options.projectsDir ? options.projects ?? [] : []) {
+  for (const project of options.projectsDir ? (options.projects ?? []) : []) {
     if (!project.logo) continue;
     const to = path.join(outDir, project.logo.replace(/^\//, ""));
     await mkdir(path.dirname(to), { recursive: true });
-    await cp(path.join(options.projectsDir, project.key, path.basename(project.logo)), to);
+    await cp(
+      path.join(options.projectsDir, project.key, path.basename(project.logo)),
+      to,
+    );
   }
-  if (options.staticDir) await cp(options.staticDir, outDir, { recursive: true });
+  if (options.staticDir)
+    await cp(options.staticDir, outDir, { recursive: true });
 }
 
 // Markdown sources travel beside their rendered page, so agents can fetch
@@ -209,7 +236,9 @@ function substitute(source, vars, where) {
 async function readTree(dir, vars = {}) {
   const node = { dir, children: [] };
 
-  for (const entry of (await readdir(dir, { withFileTypes: true })).sort(byName)) {
+  for (const entry of (await readdir(dir, { withFileTypes: true })).sort(
+    byName,
+  )) {
     if (entry.name.startsWith(".")) continue;
     const file = path.join(dir, entry.name);
 
@@ -225,15 +254,22 @@ async function readTree(dir, vars = {}) {
       const { frontmatter, body } = splitFrontmatter(
         substitute(await readFile(file, "utf8"), vars, file),
       );
-      const page = { file, slug: entry.name.replace(MARKDOWN, ""), frontmatter, body };
+      const page = {
+        file,
+        slug: entry.name.replace(MARKDOWN, ""),
+        frontmatter,
+        body,
+      };
       if (page.slug === "index") node.root = page;
       else node.children.push(page);
     }
   }
 
-  const rank = (item) => Number(item.frontmatter?.order ?? item.order ?? 1 << 30);
+  const rank = (item) =>
+    Number(item.frontmatter?.order ?? item.order ?? 1 << 30);
   node.children.sort(
-    (a, b) => rank(a) - rank(b) || String(title(a)).localeCompare(String(title(b))),
+    (a, b) =>
+      rank(a) - rank(b) || String(title(a)).localeCompare(String(title(b))),
   );
   return node;
 }
@@ -254,7 +290,9 @@ function splitFrontmatter(source) {
 // A node is a page ({file}) or a section ({dir}). A section without an index
 // page takes its name from its directory.
 const title = (node) =>
-  node.root?.frontmatter.title ?? node.frontmatter?.title ?? sentence(node.slug);
+  node.root?.frontmatter.title ??
+  node.frontmatter?.title ??
+  sentence(node.slug);
 const description = (node) =>
   node.root?.frontmatter.description ?? node.frontmatter?.description ?? "";
 // A page whose tab should not read like its heading says so itself. Given, it
@@ -264,7 +302,9 @@ const tab = (node) =>
   node.root?.frontmatter["tab-title"] ?? node.frontmatter?.["tab-title"];
 
 const sentence = (slug) =>
-  String(slug).replaceAll("-", " ").replace(/^\w/, (c) => c.toUpperCase());
+  String(slug)
+    .replaceAll("-", " ")
+    .replace(/^\w/, (c) => c.toUpperCase());
 
 // --- emitting ----------------------------------------------------------------
 
@@ -287,28 +327,36 @@ async function emitSection(section, trail, site, outDir) {
   const here = section.slug ? [...trail, section] : trail;
   const segments = here.map((n) => n.slug);
   const root = !section.slug;
-  const said = root ? landing(section, site) : {
-    title: title(section),
-    tab: tab(section),
-    description: description(section),
-  };
+  const said = root
+    ? landing(section, site)
+    : {
+        title: title(section),
+        tab: tab(section),
+        description: description(section),
+      };
 
-  const lede = root && said.lede && said.description
-    ? `<p class="lede">${escapeHtml(said.description)}</p>\n`
-    : "";
-  const hero = root && site.hero && site.cover
-    ? { image: site.cover, alt: site.coverAlt, credit: site.coverCredit }
-    : undefined;
+  const lede =
+    root && said.lede && said.description
+      ? `<p class="lede">${escapeHtml(said.description)}</p>\n`
+      : "";
+  const hero =
+    root && site.hero && site.cover
+      ? { image: site.cover, alt: site.coverAlt, credit: site.coverCredit }
+      : undefined;
   const body = section.root ? renderMarkdown(section.root.body) : "";
-  const listing = section.slug && section.children.length
-    ? `<ul class="index">\n${section.children.map((child) =>
-        `<li><a href="${child.slug}/">${escapeHtml(title(child))}</a>` +
-        (description(child)
-          ? `\n<span class="dim">${escapeHtml(description(child))}</span>`
-          : "") +
-        `</li>`,
-      ).join("\n")}\n</ul>`
-    : "";
+  const listing =
+    section.slug && section.children.length
+      ? `<ul class="index">\n${section.children
+          .map(
+            (child) =>
+              `<li><a href="${child.slug}/">${escapeHtml(title(child))}</a>` +
+              (description(child)
+                ? `\n<span class="dim">${escapeHtml(description(child))}</span>`
+                : "") +
+              `</li>`,
+          )
+          .join("\n")}\n</ul>`
+      : "";
 
   await writePage({
     outDir,
@@ -345,7 +393,8 @@ async function emitPage(page, trail, site, outDir) {
     site,
   });
   const source = sourceText(page);
-  if (source) await writeFile(path.join(outDir, ...segments, "index.md"), source);
+  if (source)
+    await writeFile(path.join(outDir, ...segments, "index.md"), source);
 }
 
 // The site mark travels: it sits beside the entry you are reading rather than
@@ -385,13 +434,14 @@ function* walkPaths(node, base) {
   for (const child of node.children ?? []) yield* walkPaths(child, here);
 }
 
-const url = (segments) => "/" + segments.join("/") + (segments.length ? "/" : "");
+const url = (segments) => `/${segments.join("/")}${segments.length ? "/" : ""}`;
 
 async function writeSitemap(tree, site, outDir) {
   if (!site.siteUrl) return;
   const rows = [...walkPaths(tree, [])]
-    .map(({ segments }) =>
-      `  <url><loc>${escapeHtml(site.siteUrl + url(segments))}</loc></url>`,
+    .map(
+      ({ segments }) =>
+        `  <url><loc>${escapeHtml(site.siteUrl + url(segments))}</loc></url>`,
     )
     .join("\n");
   await writeFile(
@@ -404,12 +454,15 @@ async function writeLlmsTxt(tree, site, outDir) {
   const lines = [`# ${site.name}`, ""];
   if (site.description) lines.push(`> ${site.description}`, "");
   if (site.github)
-    lines.push(`Source: https://github.com/${String(site.github).replace(/^https?:\/\/github\.com\//, "")}`, "");
+    lines.push(
+      `Source: https://github.com/${String(site.github).replace(/^https?:\/\/github\.com\//, "")}`,
+      "",
+    );
   for (const { segments, node } of walkPaths(tree, [])) {
     if (!segments.length) continue;
     lines.push(`- [${title(node)}](${url(segments)})`);
   }
-  await writeFile(path.join(outDir, "llms.txt"), lines.join("\n") + "\n");
+  await writeFile(path.join(outDir, "llms.txt"), `${lines.join("\n")}\n`);
 }
 
 async function writeNotFound(site, outDir) {
@@ -434,7 +487,7 @@ async function writeNotFound(site, outDir) {
 // the landing holds the same space open and shows nothing, so moving between
 // them does not shift the title. Keying this off the trail instead meant a
 // section index had no crumbs while the pages inside it did.
-function breadcrumbs(trail, site, segments) {
+function breadcrumbs(trail, _site, segments) {
   if (!segments.length) return `<div class="crumbs" aria-hidden="true"></div>`;
   let href = "";
   const parts = [{ label: "Home", href: "/" }];
@@ -444,7 +497,9 @@ function breadcrumbs(trail, site, segments) {
   }
   return (
     `<nav class="crumbs">` +
-    parts.map((part) => `<a href="${part.href}">${part.label}</a>`).join('<span class="dim"> / </span>') +
+    parts
+      .map((part) => `<a href="${part.href}">${part.label}</a>`)
+      .join('<span class="dim"> / </span>') +
     `</nav>`
   );
 }
@@ -469,7 +524,10 @@ function flatPages(tree) {
   if (!tree.flat) {
     tree.flat = [...walkPaths(tree, [])]
       .filter(({ node }) => node.file || node.root)
-      .map(({ segments, node }) => ({ path: url(segments), title: title(node) }));
+      .map(({ segments, node }) => ({
+        path: url(segments),
+        title: title(node),
+      }));
   }
   return tree.flat;
 }
@@ -478,7 +536,8 @@ function pager(tree, segments) {
   const pages = flatPages(tree);
   const index = pages.findIndex((page) => page.path === url(segments));
   const previous = index > 0 ? pages[index - 1] : undefined;
-  const next = index !== -1 && index < pages.length - 1 ? pages[index + 1] : undefined;
+  const next =
+    index !== -1 && index < pages.length - 1 ? pages[index + 1] : undefined;
   if (!previous && !next) return "";
   const side = (page, arrow, align) =>
     page
@@ -496,7 +555,8 @@ function pager(tree, segments) {
 // collapse the index on a narrow screen without it appearing and vanishing
 // again. It is the whole of what the page needs to know at that point: whether
 // there is a script to open what has been closed.
-const JS_CLASS = `<script>document.documentElement.className = "js";</scr` + `ipt>`;
+const JS_CLASS =
+  `<script>document.documentElement.className = "js";</scr` + `ipt>`;
 
 // The menu button, on a narrow screen. It ships in the markup rather than
 // being built by script, the way the copy button is, because the stylesheet
@@ -505,7 +565,8 @@ const JS_CLASS = `<script>document.documentElement.className = "js";</scr` + `ip
 // rather than a button that would not open anything. Bars closed, a cross
 // open; the stylesheet picks between them from aria-expanded, so the state is
 // said once and drawn from the saying.
-const BURGER = `<button class="burger" type="button" aria-controls="site-nav"` +
+const BURGER =
+  `<button class="burger" type="button" aria-controls="site-nav"` +
   ` aria-expanded="false" aria-label="Menu" title="Menu">` +
   `<svg class="bars" viewBox="0 0 16 16" width="18" height="18" fill="none"` +
   ` stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true">` +
@@ -521,7 +582,8 @@ const BURGER = `<button class="burger" type="button" aria-controls="site-nav"` +
 // work. The mark is a clipboard rather than the word, and it stays visible
 // rather than waiting for a hover, because a button nobody can see is one
 // nobody uses.
-const COPY_SCRIPT = `<script>
+const COPY_SCRIPT =
+  `<script>
 const svg = (body, width) =>
   '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="' +
   width + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + body + '</svg>';
@@ -562,7 +624,8 @@ if (navigator.clipboard) {
 // covering it -- so there is no trapping of focus to do and no scrolling to
 // lock, and the whole tree shows, sub-lists and all, because a reader who
 // asked for the index asked for all of it.
-const MENU_SCRIPT = `<script>
+const MENU_SCRIPT =
+  `<script>
 const menu = document.getElementById("site-nav");
 const burger = document.querySelector(".burger");
 if (menu && burger) {
@@ -580,28 +643,27 @@ const marks = (site) => (site.wordmarks ?? []).filter((mark) => mark.text);
 // preload below is what keeps that wait down to nothing worth seeing.
 function wordmarkFace(options) {
   const declared = new Set();
+  // Several names can share one face; it is fetched and declared once.
+  const face = (mark) => {
+    if (!mark.woff2 || declared.has(mark.woff2)) return "";
+    declared.add(mark.woff2);
+    return (
+      `@font-face { font-family: ${mark.font}; font-style: normal;\n` +
+      `  font-weight: 400; font-display: block;\n` +
+      `  src: url("${mark.woff2}") format("woff2"); }\n`
+    );
+  };
   return marks(options)
     .map((mark, index) => {
       if (!mark.font) return "";
-      // Several names can share one face; it is fetched and declared once.
-      const face = mark.woff2 && !declared.has(mark.woff2)
-        ? (declared.add(mark.woff2),
-          `@font-face { font-family: ${mark.font}; font-style: normal;\n` +
-          `  font-weight: 400; font-display: block;\n` +
-          `  src: url("${mark.woff2}") format("woff2"); }\n`)
-        : "";
-      return `\n${face}.wordmark-${index + 1} { font-family: ${mark.font}, var(--font-body); }\n`;
+      return `\n${face(mark)}.wordmark-${index + 1} { font-family: ${mark.font}, var(--font-body); }\n`;
     })
-    .concat((options.projects ?? []).map((project) => {
-      if (!project.font) return "";
-      const face = project.woff2 && !declared.has(project.woff2)
-        ? (declared.add(project.woff2),
-          `@font-face { font-family: ${project.font}; font-style: normal;\n` +
-          `  font-weight: 400; font-display: block;\n` +
-          `  src: url("${project.woff2}") format("woff2"); }\n`)
-        : "";
-      return `\n${face}.mark-${project.key} { font-family: ${project.font}, var(--font-body); }\n`;
-    }))
+    .concat(
+      (options.projects ?? []).map((project) => {
+        if (!project.font) return "";
+        return `\n${face(project)}.mark-${project.key} { font-family: ${project.font}, var(--font-body); }\n`;
+      }),
+    )
     .join("");
 }
 
@@ -610,8 +672,11 @@ function wordmarkFace(options) {
 function fontLink(site) {
   const wanted = [...marks(site), ...(site.projects ?? [])];
   return [...new Set(wanted.map((mark) => mark.woff2).filter(Boolean))]
-    .map((woff2) => `<link rel="preload" as="font" type="font/woff2" ` +
-      `href="${escapeHtml(woff2)}" crossorigin>`)
+    .map(
+      (woff2) =>
+        `<link rel="preload" as="font" type="font/woff2" ` +
+        `href="${escapeHtml(woff2)}" crossorigin>`,
+    )
     .join("\n");
 }
 
@@ -629,7 +694,11 @@ function wordmarked(html, site) {
   const index = new Map(wanted.map((mark, at) => [flat(mark.text), at + 1]));
   const pattern = new RegExp(
     `\\b(?:${order
-      .map((mark) => mark.text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+"))
+      .map((mark) =>
+        mark.text
+          .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+          .replace(/\s+/g, "\\s+"),
+      )
       .join("|")})\\b`,
     "g",
   );
@@ -638,10 +707,14 @@ function wordmarked(html, site) {
     if (!chunk.startsWith("<"))
       return literal
         ? chunk
-        : chunk.replace(pattern, (word) =>
-            `<span class="wordmark wordmark-${index.get(flat(word))}">${word}</span>`);
+        : chunk.replace(
+            pattern,
+            (word) =>
+              `<span class="wordmark wordmark-${index.get(flat(word))}">${word}</span>`,
+          );
     if (/^<(code|pre|script|style)[\s>]/i.test(chunk)) literal++;
-    else if (/^<\/(code|pre|script|style)>/i.test(chunk)) literal = Math.max(0, literal - 1);
+    else if (/^<\/(code|pre|script|style)>/i.test(chunk))
+      literal = Math.max(0, literal - 1);
     return chunk;
   });
 }
@@ -652,7 +725,9 @@ function wordmarked(html, site) {
 // unfurls it is not resolving paths against this origin.
 function sharing(site, segments, title, description) {
   if (!site.social || !site.siteUrl) return "";
-  const image = /^https?:\/\//.test(site.social) ? site.social : site.siteUrl + site.social;
+  const image = /^https?:\/\//.test(site.social)
+    ? site.social
+    : site.siteUrl + site.social;
   const tags = [
     ["og:type", "website"],
     ["og:site_name", site.name],
@@ -663,8 +738,10 @@ function sharing(site, segments, title, description) {
   ];
   return tags
     .filter(([, value]) => value)
-    .map(([property, value]) =>
-      `<meta property="${property}" content="${escapeHtml(String(value))}">`)
+    .map(
+      ([property, value]) =>
+        `<meta property="${property}" content="${escapeHtml(String(value))}">`,
+    )
     .concat('<meta name="twitter:card" content="summary_large_image">')
     .join("\n");
 }
@@ -690,23 +767,44 @@ function fleet(html, site) {
       project.repo && ["Code", project.repo],
     ]
       .filter(Boolean)
-      .map(([word, href]) =>
-        `<a class="fleet-link" href="${escapeHtml(href)}">${word}</a>`)
+      .map(
+        ([word, href]) =>
+          `<a class="fleet-link" href="${escapeHtml(href)}">${word}</a>`,
+      )
       .join("");
     const named = project.font
       ? `<span class="wordmark mark-${project.key}">${escapeHtml(project.name)}</span>`
       : escapeHtml(project.name);
     // The name and where to find the project share a line; the tagline gets
     // its own.
-    return `<li>${mark}<div><span class="fleet-head">` +
+    return (
+      `<li>${mark}<div><span class="fleet-head">` +
       `<span class="fleet-name">${named}</span>${links}</span>` +
-      (project.tagline ? `<span class="dim">${escapeHtml(project.tagline)}</span>` : "") +
-      `</div></li>`;
+      (project.tagline
+        ? `<span class="dim">${escapeHtml(project.tagline)}</span>`
+        : "") +
+      `</div></li>`
+    );
   });
-  return html.replace(MARKER, rows.length ? `<ul class="fleet">${rows.join("")}</ul>` : "");
+  return html.replace(
+    MARKER,
+    rows.length ? `<ul class="fleet">${rows.join("")}</ul>` : "",
+  );
 }
 
-function pageShell({ site, segments, title: pageTitle, tab, description, trail, body }) {
+// Annotated because the checker would otherwise read the first call site as
+// the signature, and every later caller that leaves out an optional field
+// becomes an error about a page rather than about the code.
+/** @param {Record<string, any>} page */
+function pageShell({
+  site,
+  segments,
+  title: pageTitle,
+  tab,
+  description,
+  trail,
+  body,
+}) {
   const canonical = site.siteUrl
     ? `<link rel="canonical" href="${escapeHtml(site.siteUrl + url(segments))}">`
     : "";
@@ -730,11 +828,15 @@ ${JS_CLASS}
 </head>
 <body>
 <div class="wrap${alone ? " solo" : ""}">
-${nav ? `<div class="side">
+${
+  nav
+    ? `<div class="side">
 <p class="brand"><a href="/">${segments.length ? "" : mark(site)}<strong>${wordmarked(escapeHtml(site.name), site)}</strong></a></p>
 ${BURGER}
 ${nav}
-</div>` : ""}
+</div>`
+    : ""
+}
 <main>
 ${breadcrumbs(trail, site, segments)}
 ${fleet(wordmarked(body, site), site)}
@@ -766,18 +868,28 @@ function heroEnd(body) {
 function masthead(pageTitle, lede, hero, opening) {
   const words = `<h1>${escapeHtml(pageTitle)}</h1>\n${lede}${opening}`;
   if (!hero) return words;
-  return `<div class="hero">\n<div class="hero-words">\n${words}</div>\n` +
+  return (
+    `<div class="hero">\n<div class="hero-words">\n${words}</div>\n` +
     `<figure class="hero-art"><img src="${escapeHtml(hero.image)}" ` +
     `alt="${escapeHtml(hero.alt ?? "")}">` +
     (hero.credit ? `<figcaption>${hero.credit}</figcaption>` : "") +
-    `</figure>\n</div>\n`;
+    `</figure>\n</div>\n`
+  );
 }
 
-async function writePage({ outDir, title: pageTitle, lede = "", hero, ...context }) {
+/** @param {Record<string, any>} page */
+async function writePage({
+  outDir,
+  title: pageTitle,
+  lede = "",
+  hero,
+  ...context
+}) {
   const ends = hero ? heroEnd(context.body) : -1;
   const opening = ends === -1 ? "" : context.body.slice(0, ends);
-  const sections = (ends === -1 ? context.body : context.body.slice(ends))
-    .replace(HERO_END, "");
+  const sections = (
+    ends === -1 ? context.body : context.body.slice(ends)
+  ).replace(HERO_END, "");
   context.body = masthead(pageTitle, lede, hero, opening) + sections;
   const target = path.join(outDir, ...context.segments, "index.html");
   await mkdir(path.dirname(target), { recursive: true });
