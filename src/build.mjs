@@ -698,7 +698,17 @@ if (box && tree) {
   let engine;
   const load = () =>
     (engine ??= import("/pagefind/pagefind.js").then((it) => (it.init(), it)));
-  box.addEventListener("focus", load, { once: true });
+  // The focus-time load is a head start, not a promise to keep: a failure
+  // here is forgotten, and the first keystroke reports it properly.
+  box.addEventListener(
+    "focus",
+    () => {
+      load().catch(() => {
+        engine = undefined;
+      });
+    },
+    { once: true },
+  );
   box.addEventListener("input", async () => {
     const query = box.value.trim();
     if (!query) {
@@ -707,13 +717,30 @@ if (box && tree) {
       results.textContent = "";
       return;
     }
-    const search = await (await load()).debouncedSearch(query);
-    // Null is a search that a newer keystroke overtook; the value check is a
-    // box emptied while this one was in flight.
-    if (search === null || box.value.trim() !== query) return;
-    const pages = await Promise.all(
-      search.results.slice(0, 8).map((result) => result.data()),
-    );
+    let search;
+    let pages;
+    try {
+      search = await (await load()).debouncedSearch(query);
+      // Null is a search that a newer keystroke overtook; the value check is
+      // a box emptied while this one was in flight.
+      if (search === null || box.value.trim() !== query) return;
+      pages = await Promise.all(
+        search.results.slice(0, 8).map((result) => result.data()),
+      );
+    } catch {
+      // A fetch that a network, a proxy or an extension refuses would
+      // otherwise die in the console and leave the box silently broken.
+      // Said where the count is said, with the tree kept, and the engine
+      // forgotten so the next keystroke tries afresh rather than replaying
+      // a cached failure.
+      engine = undefined;
+      found.textContent = "Search could not load.";
+      list.hidden = false;
+      found.hidden = false;
+      results.hidden = true;
+      results.textContent = "";
+      return;
+    }
     if (box.value.trim() !== query) return;
     results.textContent = "";
     for (const page of pages) {
