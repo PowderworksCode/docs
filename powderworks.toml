@@ -128,11 +128,26 @@ url = "https://example.powderworks.dev"
 github = "PowderworksCode/docs"
 tab-title = "Example by Powderworks"
 
+# Not yet published: the site exists in the langbank repository and builds,
+# but nothing serves langbank.dev today. Flipping this is the one-line change
+# once it does.
 [site.langbank]
 published = false
 name = "langbank"
 tagline = "What a language is, how to recognise it, and what its tooling can be asked."
+url = "https://langbank.dev"
 github = "PowderworksCode/langbank"
+tab-title = "langbank by Powderworks"
+
+# Gentium is SIL's own face — the typeface computational linguistics types in,
+# for the registry the fleet names languages with.
+[site.langbank.wordmark]
+family = "Gentium Plus"
+words = ["langbank"]
+woff2 = "/gentium-plus-latin.woff2"
+ttf = "https://raw.githubusercontent.com/google/fonts/main/ofl/gentiumplus/GentiumPlus-Regular.ttf"
+license = "OFL-1.1"
+specimen = "https://fonts.google.com/specimen/Gentium+Plus"
 
 [site.jawohl]
 published = false
