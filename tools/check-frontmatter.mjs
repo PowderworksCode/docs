@@ -1,7 +1,7 @@
 // The emitted Markdown sources carry frontmatter of their own. A value that is
-// written plain but means something else in YAML makes the emitted file
-// unparseable, which is invisible until a reader stricter than this generator
-// picks it up.
+// written plain but means something else in YAML leaves the emitted file
+// impossible to parse, which stays invisible until a reader stricter than this
+// generator picks it up.
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
