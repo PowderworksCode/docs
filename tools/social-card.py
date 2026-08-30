@@ -6,15 +6,23 @@ its tagline, its domain, and its logo down the right-hand side. What varies
 between sites is the face and the picture, which is the whole idea -- these
 are meant to look like relatives.
 
+Two faces, then: the name's, which is the site's own, and the tagline's,
+which is the workshop's and the same on every card. Both are named rather
+than looked for, because a card is drawn once and committed, and a face that
+depends on the machine that drew it is a card that quietly differs from its
+siblings.
+
     python3 social-card.py --name Straitjacket \
         --tagline "A secret scanner, but for slop." \
         --url straitjacket.dev \
         --logo site/public/engraving.jpg \
         --font https://raw.githubusercontent.com/google/fonts/main/ofl/x/X.ttf \
+        --body-font https://raw.githubusercontent.com/google/fonts/main/ofl/y/Y.ttf \
         --out site/public/social.png
 
-Needs Pillow. The face must be a ttf or otf: woff2 is for browsers, and
-Pillow cannot read it. A URL is downloaded to a temporary file.
+--site fills both from powderworks.toml and is the usual way in. Needs
+Pillow. A face must be a ttf or otf: woff2 is for browsers, and Pillow cannot
+read it. A URL is downloaded to a temporary file.
 """
 import argparse
 import functools
@@ -34,6 +42,10 @@ INK = (17, 17, 17)
 QUIET = (85, 85, 85)
 PAPER = (253, 253, 252)
 RULE = (227, 227, 224)
+# Where to look for the tagline's face when nothing names one. A card drawn
+# from these is a card that depends on the machine that drew it, so they are a
+# last resort rather than the plan -- and whichever is used is hashed, so the
+# difference shows up as a stale card instead of a silent change of typeface.
 BODY_FACES = [
     "/System/Library/Fonts/Supplemental/Georgia.ttf",
     "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
@@ -62,11 +74,22 @@ def face(where, size):
     return ImageFont.truetype(local(where), size)
 
 
-def body_face(size):
+def body_font(where):
+    """The file the tagline and the domain are set in, resolved once.
+
+    Pillow will hand out a default face for the asking, and it is a sans: a
+    card drawn with it would be wrong in a way nobody notices until it is
+    posted. Better to stop and say which face is missing.
+    """
+    if where:
+        return local(where)
     for candidate in BODY_FACES:
         if Path(candidate).exists():
-            return ImageFont.truetype(candidate, size)
-    return ImageFont.load_default(size)
+            return candidate
+    raise SystemExit(
+        "no face for the tagline: name one with --body-font, or with "
+        "[org.body] ttf in powderworks.toml"
+    )
 
 
 def width_of(draw, text, font):
@@ -134,6 +157,7 @@ def from_registry(key, where, root):
         "logo": named(root, "cover") or named(where.parent / "assets" / key, "cover"),
         "font": mine.get("wordmark", {}).get("ttf")
         or config.get("org", {}).get("wordmark", {}).get("ttf"),
+        "body_font": config.get("org", {}).get("body", {}).get("ttf"),
         "out": str(Path(root) / "social.png"),
     }
 
@@ -157,8 +181,8 @@ LAYOUT = 1
 
 
 def fingerprint(said):
-    """What the card is a function of: the words, the picture, the face, and
-    the version of the arrangement.
+    """What the card is a function of: the words, the picture, the two faces,
+    and the version of the arrangement.
 
     Comparing the drawings instead would mean comparing rendering, and freetype
     hints differently from one version to the next, so a card drawn on a laptop
@@ -170,7 +194,7 @@ def fingerprint(said):
     for word in (said.name, said.tagline, said.url):
         digest.update(f"{word or ''}\x00".encode())
     digest.update(f"layout {LAYOUT}\x00".encode())
-    for path in (said.logo, local(said.font)):
+    for path in (said.logo, local(said.font), said.body_font):
         if path:
             digest.update(Path(path).read_bytes())
     return digest.hexdigest()[:16]
@@ -200,6 +224,9 @@ def main():
     parse.add_argument("--url")
     parse.add_argument("--logo")
     parse.add_argument("--font", help="ttf or otf, path or URL")
+    parse.add_argument(
+        "--body-font", help="the tagline's face: ttf or otf, path or URL"
+    )
     parse.add_argument("--out")
     parse.add_argument(
         "--check",
@@ -217,6 +244,7 @@ def main():
             raise SystemExit(f"--{needed} is required without --site")
     said.tagline = said.tagline or ""
     said.url = said.url or ""
+    said.body_font = body_font(said.body_font)
 
     card = Image.new("RGB", (WIDTH, HEIGHT), PAPER)
     draw = ImageDraw.Draw(card)
@@ -224,8 +252,8 @@ def main():
     room = edge - GUTTER - MARGIN
 
     name, titles = fitted(draw, said.name, said.font, room)
-    tagline = body_face(38)
-    domain = body_face(27)
+    tagline = face(said.body_font, 38)
+    domain = face(said.body_font, 27)
     lines = wrapped(draw, said.tagline, tagline, room) if said.tagline else []
 
     leading = round(name.size * 1.16)
