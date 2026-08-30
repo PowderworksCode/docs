@@ -218,9 +218,6 @@ footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line);
    separate what a thing IS from what it is CALLED. Anything unmapped inherits
    the body colour, which is the right default for the parts of a program that
    are just names. */
-/* stylelint-disable-next-line no-duplicate-selectors -- a second :root on
-   purpose: these are the highlighting tokens, and the comment above is what
-   makes them findable. Folding them into the first block would bury it. */
 :root {
   --hl-keyword: #8250df;   /* keyword, operator, the language's own words */
   --hl-string:  #0a6847;   /* string, char, regex */
