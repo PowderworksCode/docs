@@ -87,17 +87,23 @@ ttf = "https://raw.githubusercontent.com/google/fonts/main/ofl/manufacturingcons
 license = "OFL-1.1"
 specimen = "https://fonts.google.com/specimen/Manufacturing+Consent"
 
+# Lowercase throughout, which is the one Bauhaus argument the school actually
+# printed on its own stationery: Bayer's line that we speak one alphabet and
+# should not write two, so a capital is a letterform doing no work. The name
+# is set that way everywhere it appears -- masthead, tab, card, the fleet's
+# own listing -- rather than lowercased in the theme, because it is the name
+# and not a style applied to one.
 [site.ordnung]
 published = true
-name = "Ordnung"
+name = "ordnung"
 tagline = "Everything in its right place."
 url = "https://ordnung.dev"
 github = "PowderworksCode/ordnung"
-tab-title = "Ordnung by Powderworks"
+tab-title = "ordnung by Powderworks"
 
 # Jost is a Futura, and Futura is Paul Renner in 1927 -- the face German
 # modernism drew when it wanted to say that a thing had been thought through.
-# A tool called Ordnung set in Bauhaus geometry is the argument made in the
+# A tool called ordnung set in Bauhaus geometry is the argument made in the
 # lettering rather than in the tagline.
 #
 # weight because Google ships this as a variable font with no static instance:
@@ -105,7 +111,7 @@ tab-title = "Ordnung by Powderworks"
 # the file's default 400 while the site served the 500.
 [site.ordnung.wordmark]
 family = "Jost"
-words = ["Ordnung"]
+words = ["ordnung"]
 woff2 = "/jost-latin.woff2"
 ttf = "https://raw.githubusercontent.com/google/fonts/main/ofl/jost/Jost%5Bwght%5D.ttf"
 weight = 500
