@@ -70,8 +70,24 @@ def local(where):
     return handle.name
 
 
-def face(where, size):
-    return ImageFont.truetype(local(where), size)
+def face(where, size, weight=None):
+    """A face at a size, and at a weight where one is asked for.
+
+    Google ships variable fonts now and no static instances, so a file names a
+    range rather than a weight and Pillow draws whatever the default instance
+    happens to be. That is fine until the site serves one instance and the card
+    draws another -- the same name in two weights, which is the same class of
+    drift as the same name in two typefaces.
+    """
+    font = ImageFont.truetype(local(where), size)
+    if weight:
+        try:
+            font.set_variation_by_axes([weight])
+        except OSError:
+            # Not variable: the file is the weight it is, and saying so again
+            # is not an error.
+            pass
+    return font
 
 
 def body_font(where):
@@ -100,16 +116,16 @@ def width_of(draw, text, font):
 NAME_CEILING, NAME_FLOOR, NAME_LINES = 112, 52, 2
 
 
-def fitted(draw, text, where, room):
+def fitted(draw, text, where, room, weight=None):
     """Largest size at which the name fits, wrapping rather than shrinking past
     the floor. A name set smaller than the tagline under it reads as a caption,
     which is the wrong way round however well it fits."""
     for size in range(NAME_CEILING, NAME_FLOOR, -2):
-        font = face(where, size)
+        font = face(where, size, weight)
         lines = wrapped(draw, text, font, room)
         if len(lines) <= NAME_LINES and all(width_of(draw, l, font) <= room for l in lines):
             return font, lines
-    font = face(where, NAME_FLOOR)
+    font = face(where, NAME_FLOOR, weight)
     return font, wrapped(draw, text, font, room)
 
 
@@ -158,6 +174,8 @@ def from_registry(key, where, root):
         "font": mine.get("wordmark", {}).get("ttf")
         or config.get("org", {}).get("wordmark", {}).get("ttf"),
         "body_font": config.get("org", {}).get("body", {}).get("ttf"),
+        "weight": mine.get("wordmark", {}).get("weight")
+        or config.get("org", {}).get("wordmark", {}).get("weight"),
         "out": str(Path(root) / "social.png"),
     }
 
@@ -194,6 +212,7 @@ def fingerprint(said):
     for word in (said.name, said.tagline, said.url):
         digest.update(f"{word or ''}\x00".encode())
     digest.update(f"layout {LAYOUT}\x00".encode())
+    digest.update(f"weight {said.weight or ''}\x00".encode())
     for path in (said.logo, local(said.font), said.body_font):
         if path:
             digest.update(Path(path).read_bytes())
@@ -227,6 +246,9 @@ def main():
     parse.add_argument(
         "--body-font", help="the tagline's face: ttf or otf, path or URL"
     )
+    parse.add_argument(
+        "--weight", type=int, help="the name's weight, where its face is variable"
+    )
     parse.add_argument("--out")
     parse.add_argument(
         "--check",
@@ -251,7 +273,7 @@ def main():
     edge = draw_logo(card, said.logo) if said.logo else WIDTH - MARGIN
     room = edge - GUTTER - MARGIN
 
-    name, titles = fitted(draw, said.name, said.font, room)
+    name, titles = fitted(draw, said.name, said.font, room, said.weight)
     tagline = face(said.body_font, 38)
     domain = face(said.body_font, 27)
     lines = wrapped(draw, said.tagline, tagline, room) if said.tagline else []
