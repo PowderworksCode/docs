@@ -87,21 +87,36 @@ ttf = "https://raw.githubusercontent.com/google/fonts/main/ofl/manufacturingcons
 license = "OFL-1.1"
 specimen = "https://fonts.google.com/specimen/Manufacturing+Consent"
 
+# Lowercase throughout, which is the one Bauhaus argument the school actually
+# printed on its own stationery: Bayer's line that we speak one alphabet and
+# should not write two, so a capital is a letterform doing no work. The name
+# is set that way everywhere it appears -- masthead, tab, card, the fleet's
+# own listing -- rather than lowercased in the theme, because it is the name
+# and not a style applied to one.
 [site.ordnung]
 published = true
-name = "Ordnung"
+name = "ordnung"
 tagline = "Everything in its right place."
 url = "https://ordnung.dev"
 github = "PowderworksCode/ordnung"
-tab-title = "Ordnung by Powderworks"
+tab-title = "ordnung by Powderworks"
 
+# Jost is a Futura, and Futura is Paul Renner in 1927 -- the face German
+# modernism drew when it wanted to say that a thing had been thought through.
+# A tool called ordnung set in Bauhaus geometry is the argument made in the
+# lettering rather than in the tagline.
+#
+# weight because Google ships this as a variable font with no static instance:
+# the woff2 beside it is the 500, and without saying so the card would draw
+# the file's default 400 while the site served the 500.
 [site.ordnung.wordmark]
-family = "Fredoka"
-words = ["Ordnung"]
-woff2 = "/fredoka-latin.woff2"
-ttf = "https://raw.githubusercontent.com/google/fonts/main/ofl/fredoka/Fredoka%5Bwdth,wght%5D.ttf"
+family = "Jost"
+words = ["ordnung"]
+woff2 = "/jost-latin.woff2"
+ttf = "https://raw.githubusercontent.com/google/fonts/main/ofl/jost/Jost%5Bwght%5D.ttf"
+weight = 500
 license = "OFL-1.1"
-specimen = "https://fonts.google.com/specimen/Fredoka"
+specimen = "https://fonts.google.com/specimen/Jost"
 
 [site.treebank]
 published = true
@@ -112,11 +127,11 @@ github = "PowderworksCode/treebank"
 tab-title = "Treebank by Powderworks"
 
 # Fraunces italic with WONK on. The ttf is a static instance committed in the
-# treebank repo rather than Google's variable file, because social-card.py
-# draws with Pillow, which cannot set variation axes -- the variable file's
-# default instance is opsz=9 wght=900, a 9pt Black, where the site sets a
-# 144pt Semibold. Pointing at the instance keeps the card and the site in the
-# same letterforms.
+# treebank repo rather than Google's variable file: the variable file's default
+# instance is opsz=9 wght=900, a 9pt Black, where the site sets a 144pt
+# Semibold. `weight` below would move the wght axis but not opsz, and this face
+# needs both, so pointing at the instance is still what keeps the card and the
+# site in the same letterforms.
 [site.treebank.wordmark]
 family = "Fraunces"
 words = ["Treebank"]
